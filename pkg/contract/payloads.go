@@ -52,14 +52,50 @@ func readPrefixedString(r io.Reader) (string, error) {
 	return string(stringBytes), nil
 }
 
-type S2CEnemyDuelEmojiMessage struct{}
+func writePrefixedString(w io.Writer, s string) error {
+	if len(s) > 0xffff {
+		return fmt.Errorf("string to long (%d bytes)", len(s))
+	}
+
+	length := uint16(len(s))
+
+	if err := binary.Write(w, binary.BigEndian, length); err != nil {
+		return err
+	}
+
+	if _, err := w.Write([]byte(s)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type S2CEnemyDuelEmojiMessage struct {
+	PlayerID   string
+	EmojiGroup string
+	EmojiID    string
+}
 
 func (m *S2CEnemyDuelEmojiMessage) ContentType() uint32 {
 	return S2CEnemyDuelEmojiMessageType
 }
 
 func (m *S2CEnemyDuelEmojiMessage) Marshal() ([]byte, error) {
-	panic("TODO")
+	var buf bytes.Buffer
+
+	if err := writePrefixedString(&buf, m.PlayerID); err != nil {
+		return nil, err
+	}
+
+	if err := writePrefixedString(&buf, m.EmojiGroup); err != nil {
+		return nil, err
+	}
+
+	if err := writePrefixedString(&buf, m.EmojiID); err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
 }
 
 func (m *S2CEnemyDuelEmojiMessage) Unmarshal(payload []byte) error {
