@@ -40,11 +40,27 @@ func ToEnvelop(c Content) (*protocol.Envelop, error) {
 }
 
 func WriteContent(w io.Writer, c Content) error {
+	env, err := ToEnvelop(c)
+	if err != nil {
+		return err
+	}
+	err = protocol.WriteEnvelop(w, env)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 func ReadContent(r io.Reader) (Content, error) {
-	return nil, nil
+	env, err := protocol.ReadEnvelop(r)
+	if err != nil {
+		return nil, err
+	}
+	c, err := FromEnvelop(env)
+	if err != nil {
+		return nil, err
+	}
+	return c, nil
 }
 
 func readPrefixedString(r io.Reader) (string, error) {
