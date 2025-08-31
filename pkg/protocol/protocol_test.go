@@ -9,7 +9,6 @@ import (
 func TestReadWriteMessage(t *testing.T) {
 	serverConn, clientConn := net.Pipe()
 	defer serverConn.Close()
-	defer clientConn.Close()
 
 	const testMsgType uint32 = 123
 	testPayload := []byte("some_payload")
@@ -51,7 +50,6 @@ func TestReadMessageWithPacket(t *testing.T) {
 
 	serverConn, clientConn := net.Pipe()
 	defer serverConn.Close()
-	defer clientConn.Close()
 
 	errChan := make(chan error, 1)
 
