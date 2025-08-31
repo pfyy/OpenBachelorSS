@@ -52,7 +52,7 @@ func main() {
 		}
 
 		func() {
-			defer recover()
+			defer func() { recover() }()
 
 			content, err := contract.FromEnvelop(receivedEnv)
 			if err == nil {
