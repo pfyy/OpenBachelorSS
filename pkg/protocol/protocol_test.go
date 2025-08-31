@@ -6,6 +6,10 @@ import (
 	"testing"
 )
 
+func cloneBytes(payload []byte) []byte {
+	return append([]byte(nil), payload...)
+}
+
 func TestReadWriteEnvelop(t *testing.T) {
 	serverConn, clientConn := net.Pipe()
 	defer serverConn.Close()
@@ -14,7 +18,7 @@ func TestReadWriteEnvelop(t *testing.T) {
 	testPayload := []byte("some_payload")
 	expectedMsg := &Envelop{
 		Type:    testMsgType,
-		Payload: append([]byte(nil), testPayload...),
+		Payload: cloneBytes(testPayload),
 	}
 
 	errChan := make(chan error, 1)
@@ -22,7 +26,7 @@ func TestReadWriteEnvelop(t *testing.T) {
 	go func() {
 		defer clientConn.Close()
 
-		errChan <- WriteEnvelop(clientConn, &Envelop{Type: testMsgType, Payload: append([]byte(nil), testPayload...)})
+		errChan <- WriteEnvelop(clientConn, &Envelop{Type: testMsgType, Payload: cloneBytes(testPayload)})
 	}()
 
 	receivedMsg, err := ReadEnvelop(serverConn)
@@ -45,7 +49,7 @@ func TestReadEnvelopWithPacket(t *testing.T) {
 	testPayload := []byte{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x14}
 	expectedMsg := &Envelop{
 		Type:    testMsgType,
-		Payload: append([]byte(nil), testPayload...),
+		Payload: cloneBytes(testPayload),
 	}
 
 	serverConn, clientConn := net.Pipe()
