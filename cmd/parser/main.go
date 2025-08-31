@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"sync"
 
 	"github.com/OpenBachelor/OpenBachelorSS/pkg/protocol"
 )
@@ -23,7 +24,11 @@ func main() {
 	serverConn, clientConn := net.Pipe()
 	defer serverConn.Close()
 
+	var wg sync.WaitGroup
+	wg.Add(1)
+
 	go func() {
+		defer wg.Done()
 		defer clientConn.Close()
 
 		_, err := clientConn.Write(streamData)
@@ -48,6 +53,8 @@ func main() {
 		msgCnt++
 		msgTypeMap[receivedMsg.Type]++
 	}
+
+	wg.Wait()
 
 	log.Printf("num of msg: %d", msgCnt)
 	log.Printf("msg type: %v", msgTypeMap)
