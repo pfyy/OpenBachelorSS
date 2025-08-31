@@ -15,18 +15,18 @@ type Envelop struct {
 	Payload []byte
 }
 
-func WriteEnvelop(conn net.Conn, msg *Envelop) error {
+func WriteEnvelop(conn net.Conn, env *Envelop) error {
 	header := make([]byte, headerSize)
 
-	binary.BigEndian.PutUint32(header[0:4], uint32(len(msg.Payload)))
-	binary.BigEndian.PutUint32(header[4:8], msg.Type)
+	binary.BigEndian.PutUint32(header[0:4], uint32(len(env.Payload)))
+	binary.BigEndian.PutUint32(header[4:8], env.Type)
 
 	if _, err := conn.Write(header); err != nil {
 		return err
 	}
 
-	if len(msg.Payload) > 0 {
-		if _, err := conn.Write(msg.Payload); err != nil {
+	if len(env.Payload) > 0 {
+		if _, err := conn.Write(env.Payload); err != nil {
 			return err
 		}
 	}

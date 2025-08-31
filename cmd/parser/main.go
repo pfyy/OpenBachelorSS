@@ -7,6 +7,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/OpenBachelor/OpenBachelorSS/pkg/contract"
 	"github.com/OpenBachelor/OpenBachelorSS/pkg/protocol"
 )
 
@@ -41,7 +42,7 @@ func main() {
 	msgCnt := 0
 	msgTypeMap := make(map[uint32]int)
 	for {
-		receivedMsg, err := protocol.ReadEnvelop(serverConn)
+		receivedEnv, err := protocol.ReadEnvelop(serverConn)
 		if err == io.EOF {
 			break
 		}
@@ -50,8 +51,17 @@ func main() {
 			break
 		}
 
+		func() {
+			defer recover()
+
+			content, err := contract.FromEnvelop(receivedEnv)
+			if err == nil {
+				log.Printf("msg: %+v", content)
+			}
+		}()
+
 		msgCnt++
-		msgTypeMap[receivedMsg.Type]++
+		msgTypeMap[receivedEnv.Type]++
 	}
 
 	wg.Wait()

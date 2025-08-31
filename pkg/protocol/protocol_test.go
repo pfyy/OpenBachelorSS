@@ -16,7 +16,7 @@ func TestReadWriteEnvelop(t *testing.T) {
 
 	const testMsgType uint32 = 123
 	testPayload := []byte("some_payload")
-	expectedMsg := &Envelop{
+	expectedEnv := &Envelop{
 		Type:    testMsgType,
 		Payload: cloneBytes(testPayload),
 	}
@@ -29,7 +29,7 @@ func TestReadWriteEnvelop(t *testing.T) {
 		errChan <- WriteEnvelop(clientConn, &Envelop{Type: testMsgType, Payload: cloneBytes(testPayload)})
 	}()
 
-	receivedMsg, err := ReadEnvelop(serverConn)
+	receivedEnv, err := ReadEnvelop(serverConn)
 	if err != nil {
 		t.Fatalf("ReadEnvelop failed: %v", err)
 	}
@@ -38,8 +38,8 @@ func TestReadWriteEnvelop(t *testing.T) {
 		t.Fatalf("WriteEnvelop failed: %v", err)
 	}
 
-	if !reflect.DeepEqual(expectedMsg, receivedMsg) {
-		t.Errorf("message mismatch: \ngot: %+v\nwant: %+v", receivedMsg, expectedMsg)
+	if !reflect.DeepEqual(expectedEnv, receivedEnv) {
+		t.Errorf("envelop mismatch: \ngot: %+v\nwant: %+v", receivedEnv, expectedEnv)
 	}
 }
 
@@ -47,7 +47,7 @@ func TestReadEnvelopWithPacket(t *testing.T) {
 	packet := []byte{0x0, 0x0, 0x0, 0xc, 0x0, 0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x14}
 	const testMsgType uint32 = 1
 	testPayload := []byte{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x14}
-	expectedMsg := &Envelop{
+	expectedEnv := &Envelop{
 		Type:    testMsgType,
 		Payload: cloneBytes(testPayload),
 	}
@@ -65,7 +65,7 @@ func TestReadEnvelopWithPacket(t *testing.T) {
 		errChan <- err
 	}()
 
-	receivedMsg, err := ReadEnvelop(serverConn)
+	receivedEnv, err := ReadEnvelop(serverConn)
 	if err != nil {
 		t.Fatalf("ReadEnvelop failed: %v", err)
 	}
@@ -74,7 +74,7 @@ func TestReadEnvelopWithPacket(t *testing.T) {
 		t.Fatalf("write packet failed: %v", err)
 	}
 
-	if !reflect.DeepEqual(expectedMsg, receivedMsg) {
-		t.Errorf("message mismatch: \ngot: %+v\nwant: %+v", receivedMsg, expectedMsg)
+	if !reflect.DeepEqual(expectedEnv, receivedEnv) {
+		t.Errorf("envelop mismatch: \ngot: %+v\nwant: %+v", receivedEnv, expectedEnv)
 	}
 }
