@@ -34,7 +34,7 @@ func main() {
 	}()
 
 	msgCnt := 0
-	msgTypeMap := make(map[uint32]struct{})
+	msgTypeMap := make(map[uint32]int)
 	for {
 		receivedMsg, err := protocol.ReadMessage(serverConn)
 		if err == io.EOF {
@@ -46,7 +46,7 @@ func main() {
 		}
 
 		msgCnt++
-		msgTypeMap[receivedMsg.Type] = struct{}{}
+		msgTypeMap[receivedMsg.Type]++
 	}
 
 	log.Printf("num of msg: %d", msgCnt)
