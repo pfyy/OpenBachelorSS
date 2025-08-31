@@ -1,7 +1,10 @@
 package contract
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
+	"io"
 
 	"github.com/OpenBachelor/OpenBachelorSS/pkg/protocol"
 )
@@ -36,6 +39,19 @@ func ToEnvelop(c Content) (*protocol.Envelop, error) {
 	}, nil
 }
 
+func readPrefixedString(r io.Reader) (string, error) {
+	var length uint16
+	if err := binary.Read(r, binary.BigEndian, &length); err != nil {
+		return "", err
+	}
+
+	stringBytes := make([]byte, length)
+	if _, err := io.ReadFull(r, stringBytes); err != nil {
+		return "", err
+	}
+	return string(stringBytes), nil
+}
+
 type S2CEnemyDuelEmojiMessage struct{}
 
 func (m *S2CEnemyDuelEmojiMessage) ContentType() uint32 {
@@ -50,7 +66,10 @@ func (m *S2CEnemyDuelEmojiMessage) Unmarshal(payload []byte) error {
 	panic("TODO")
 }
 
-type C2SEnemyDuelEmojiMessage struct{}
+type C2SEnemyDuelEmojiMessage struct {
+	EmojiGroup string
+	EmojiID    string
+}
 
 func (m *C2SEnemyDuelEmojiMessage) ContentType() uint32 {
 	return C2SEnemyDuelEmojiMessageType
@@ -61,5 +80,19 @@ func (m *C2SEnemyDuelEmojiMessage) Marshal() ([]byte, error) {
 }
 
 func (m *C2SEnemyDuelEmojiMessage) Unmarshal(payload []byte) error {
-	panic("TODO")
+	reader := bytes.NewReader(payload)
+
+	var err error
+
+	m.EmojiGroup, err = readPrefixedString(reader)
+	if err != nil {
+		return err
+	}
+
+	m.EmojiID, err = readPrefixedString(reader)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
