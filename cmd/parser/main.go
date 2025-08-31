@@ -41,12 +41,12 @@ func main() {
 	msgCnt := 0
 	msgTypeMap := make(map[uint32]int)
 	for {
-		receivedMsg, err := protocol.ReadMessage(serverConn)
+		receivedMsg, err := protocol.ReadEnvelop(serverConn)
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			log.Printf("ReadMessage failed: %v", err)
+			log.Printf("ReadEnvelop failed: %v", err)
 			break
 		}
 

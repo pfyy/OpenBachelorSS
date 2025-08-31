@@ -6,13 +6,13 @@ import (
 	"testing"
 )
 
-func TestReadWriteMessage(t *testing.T) {
+func TestReadWriteEnvelop(t *testing.T) {
 	serverConn, clientConn := net.Pipe()
 	defer serverConn.Close()
 
 	const testMsgType uint32 = 123
 	testPayload := []byte("some_payload")
-	expectedMsg := &Message{
+	expectedMsg := &Envelop{
 		Type:    testMsgType,
 		Payload: append([]byte(nil), testPayload...),
 	}
@@ -22,16 +22,16 @@ func TestReadWriteMessage(t *testing.T) {
 	go func() {
 		defer clientConn.Close()
 
-		errChan <- WriteMessage(clientConn, testMsgType, testPayload)
+		errChan <- WriteEnvelop(clientConn, testMsgType, testPayload)
 	}()
 
-	receivedMsg, err := ReadMessage(serverConn)
+	receivedMsg, err := ReadEnvelop(serverConn)
 	if err != nil {
-		t.Fatalf("ReadMessage failed: %v", err)
+		t.Fatalf("ReadEnvelop failed: %v", err)
 	}
 
 	if err := <-errChan; err != nil {
-		t.Fatalf("WriteMessage failed: %v", err)
+		t.Fatalf("WriteEnvelop failed: %v", err)
 	}
 
 	if !reflect.DeepEqual(expectedMsg, receivedMsg) {
@@ -39,11 +39,11 @@ func TestReadWriteMessage(t *testing.T) {
 	}
 }
 
-func TestReadMessageWithPacket(t *testing.T) {
+func TestReadEnvelopWithPacket(t *testing.T) {
 	packet := []byte{0x0, 0x0, 0x0, 0xc, 0x0, 0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x14}
 	const testMsgType uint32 = 1
 	testPayload := []byte{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x14}
-	expectedMsg := &Message{
+	expectedMsg := &Envelop{
 		Type:    testMsgType,
 		Payload: append([]byte(nil), testPayload...),
 	}
@@ -61,9 +61,9 @@ func TestReadMessageWithPacket(t *testing.T) {
 		errChan <- err
 	}()
 
-	receivedMsg, err := ReadMessage(serverConn)
+	receivedMsg, err := ReadEnvelop(serverConn)
 	if err != nil {
-		t.Fatalf("ReadMessage failed: %v", err)
+		t.Fatalf("ReadEnvelop failed: %v", err)
 	}
 
 	if err := <-errChan; err != nil {

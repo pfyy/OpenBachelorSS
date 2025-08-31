@@ -10,12 +10,12 @@ const (
 	headerSize = 8
 )
 
-type Message struct {
+type Envelop struct {
 	Type    uint32
 	Payload []byte
 }
 
-func WriteMessage(conn net.Conn, msgType uint32, payload []byte) error {
+func WriteEnvelop(conn net.Conn, msgType uint32, payload []byte) error {
 	header := make([]byte, headerSize)
 
 	binary.BigEndian.PutUint32(header[0:4], uint32(len(payload)))
@@ -34,7 +34,7 @@ func WriteMessage(conn net.Conn, msgType uint32, payload []byte) error {
 	return nil
 }
 
-func ReadMessage(conn net.Conn) (*Message, error) {
+func ReadEnvelop(conn net.Conn) (*Envelop, error) {
 	header := make([]byte, headerSize)
 
 	if _, err := io.ReadFull(conn, header); err != nil {
@@ -52,7 +52,7 @@ func ReadMessage(conn net.Conn) (*Message, error) {
 		}
 	}
 
-	return &Message{
+	return &Envelop{
 		Type:    msgType,
 		Payload: payload,
 	}, nil
