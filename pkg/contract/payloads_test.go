@@ -40,3 +40,24 @@ func TestReadContent(t *testing.T) {
 		t.Errorf("content mismatch: \ngot: %#v\nwant: %#v", content, expectedContent)
 	}
 }
+
+func TestWriteContent(t *testing.T) {
+	content := &S2CEnemyDuelEmojiMessage{
+		PlayerID:   "123456",
+		EmojiGroup: "emoji_group",
+		EmojiID:    "emoji_id",
+	}
+	expectedPacket := []byte{0x0, 0x0, 0x0, 0x1f, 0x0, 0x0, 0x0, 0xe0, 0x0, 0x6, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x0, 0xb, 0x65, 0x6d, 0x6f, 0x6a, 0x69, 0x5f, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x0, 0x8, 0x65, 0x6d, 0x6f, 0x6a, 0x69, 0x5f, 0x69, 0x64}
+
+	var outputBuffer bytes.Buffer
+
+	err := WriteContent(&outputBuffer, content)
+	if err != nil {
+		t.Fatalf("WriteContent failed: %v", err)
+	}
+
+	packet := outputBuffer.Bytes()
+	if !bytes.Equal(expectedPacket, packet) {
+		t.Errorf("packet mismatch: \ngot: %#v\nwant: %#v", packet, expectedPacket)
+	}
+}
