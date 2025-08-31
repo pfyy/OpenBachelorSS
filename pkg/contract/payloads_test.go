@@ -2,6 +2,7 @@ package contract
 
 import (
 	"bytes"
+	"reflect"
 	"testing"
 )
 
@@ -20,5 +21,22 @@ func TestS2CEnemyDuelEmojiMessageMarshal(t *testing.T) {
 
 	if !bytes.Equal(expectedPayload, payload) {
 		t.Errorf("payload mismatch: \ngot: %#v\nwant: %#v", payload, expectedPayload)
+	}
+}
+
+func TestReadContent(t *testing.T) {
+	packet := []byte{0x0, 0x0, 0x0, 0x29, 0x0, 0x0, 0x0, 0xdf, 0x0, 0x12, 0x65, 0x6d, 0x74, 0x69, 0x63, 0x6f, 0x6e, 0x5f, 0x64, 0x75, 0x65, 0x6c, 0x5f, 0x62, 0x61, 0x73, 0x69, 0x63, 0x0, 0x13, 0x64, 0x75, 0x65, 0x6c, 0x5f, 0x62, 0x61, 0x74, 0x74, 0x6c, 0x65, 0x5f, 0x77, 0x72, 0x6f, 0x6e, 0x67, 0x65, 0x64}
+	expectedContent := &C2SEnemyDuelEmojiMessage{EmojiGroup: "emticon_duel_basic", EmojiID: "duel_battle_wronged"}
+
+	reader := bytes.NewReader(packet)
+
+	content, err := ReadContent(reader)
+
+	if err != nil {
+		t.Fatalf("ReadContent failed: %v", err)
+	}
+
+	if !reflect.DeepEqual(expectedContent, content) {
+		t.Errorf("content mismatch: \ngot: %#v\nwant: %#v", content, expectedContent)
 	}
 }
