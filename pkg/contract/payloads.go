@@ -39,6 +39,14 @@ func ToEnvelop(c Content) (*protocol.Envelop, error) {
 	}, nil
 }
 
+func WriteContent(w io.Writer, c Content) error {
+	return nil
+}
+
+func ReadContent(r io.Reader) (Content, error) {
+	return nil, nil
+}
+
 func readPrefixedString(r io.Reader) (string, error) {
 	var length uint16
 	if err := binary.Read(r, binary.BigEndian, &length); err != nil {
