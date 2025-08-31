@@ -22,7 +22,7 @@ func TestReadWriteEnvelop(t *testing.T) {
 	go func() {
 		defer clientConn.Close()
 
-		errChan <- WriteEnvelop(clientConn, testMsgType, testPayload)
+		errChan <- WriteEnvelop(clientConn, &Envelop{Type: testMsgType, Payload: append([]byte(nil), testPayload...)})
 	}()
 
 	receivedMsg, err := ReadEnvelop(serverConn)
