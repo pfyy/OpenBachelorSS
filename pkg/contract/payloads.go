@@ -15,6 +15,7 @@ func init() {
 	RegisterMessage(S2CEnemyDuelEmojiMessageType, func() Content { return &S2CEnemyDuelEmojiMessage{} })
 	RegisterMessage(C2SEnemyDuelEmojiMessageType, func() Content { return &C2SEnemyDuelEmojiMessage{} })
 	RegisterMessage(C2SEnemyDuelBattleReadyMessageType, func() Content { return &C2SEnemyDuelBattleReadyMessage{} })
+	RegisterMessage(C2SEnemyDuelSceneJoinMessageType, func() Content { return &C2SEnemyDuelSceneJoinMessage{} })
 }
 
 func RegisterMessage(msgType uint32, constructor func() Content) {
@@ -181,5 +182,42 @@ func (m *C2SEnemyDuelBattleReadyMessage) Marshal() ([]byte, error) {
 }
 
 func (m *C2SEnemyDuelBattleReadyMessage) Unmarshal(payload []byte) error {
+	return nil
+}
+
+type C2SEnemyDuelSceneJoinMessage struct {
+	PlayerID string
+	SceneID  string
+	Token    string
+}
+
+func (m *C2SEnemyDuelSceneJoinMessage) ContentType() uint32 {
+	return C2SEnemyDuelSceneJoinMessageType
+}
+
+func (m *C2SEnemyDuelSceneJoinMessage) Marshal() ([]byte, error) {
+	panic("TODO")
+}
+
+func (m *C2SEnemyDuelSceneJoinMessage) Unmarshal(payload []byte) error {
+	reader := bytes.NewReader(payload)
+
+	var err error
+
+	m.PlayerID, err = readPrefixedString(reader)
+	if err != nil {
+		return err
+	}
+
+	m.SceneID, err = readPrefixedString(reader)
+	if err != nil {
+		return err
+	}
+
+	m.Token, err = readPrefixedString(reader)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
