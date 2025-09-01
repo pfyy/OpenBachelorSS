@@ -475,7 +475,7 @@ type EnemyDuelServicePlayer struct {
 	PlayerID   string
 	AvatarID   string
 	NickName   string
-	AvatarType uint8
+	AvatarType string
 	HaveShield uint8
 }
 
@@ -494,7 +494,7 @@ func (t *EnemyDuelServicePlayer) MarshalBinary() ([]byte, error) {
 		return nil, err
 	}
 
-	if err := binary.Write(&buf, binary.BigEndian, t.AvatarType); err != nil {
+	if err := writePrefixedString(&buf, t.AvatarType); err != nil {
 		return nil, err
 	}
 
