@@ -262,7 +262,38 @@ func (m *S2CEnemyDuelStepMessage) Unmarshal(payload []byte) error {
 	panic("TODO")
 }
 
+type EnemyDuelBattleStatusEntryData struct {
+	Seed        uint32
+	SeedHistory []uint32
+	SideHistory []uint8
+}
+
+type EnemyDuelBattleStatusBetItem struct {
+	PlayerID string
+	Side     uint8
+	AllIn    uint8
+	Streak   uint8
+	UpdateTs uint64
+}
+
+type EnemyDuelBattleStatusRoundLeaderBoard struct {
+	PlayerID    string
+	OldMoney    uint32
+	NewMoney    uint32
+	MaxRound    uint8
+	Streak      uint8
+	Result      uint8
+	Bet         uint8
+	ShieldState uint8
+}
+
 type S2CEnemyDuelClientStateMessage struct {
+	State        uint8
+	Round        uint8
+	ForceEndTs   uint64
+	SrcEntryData []EnemyDuelBattleStatusEntryData
+	BetList      []EnemyDuelBattleStatusBetItem
+	LeaderBoard  []EnemyDuelBattleStatusRoundLeaderBoard
 }
 
 func (m *S2CEnemyDuelClientStateMessage) ContentType() uint32 {
