@@ -5,5 +5,6 @@ const (
 )
 
 const (
-	C2SEnemyDuelEmojiMessageType = 223
+	C2SEnemyDuelEmojiMessageType       = 223
+	C2SEnemyDuelBattleReadyMessageType = 201
 )

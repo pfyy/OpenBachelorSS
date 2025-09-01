@@ -14,6 +14,7 @@ var messageRegistry = make(map[uint32]func() Content)
 func init() {
 	RegisterMessage(S2CEnemyDuelEmojiMessageType, func() Content { return &S2CEnemyDuelEmojiMessage{} })
 	RegisterMessage(C2SEnemyDuelEmojiMessageType, func() Content { return &C2SEnemyDuelEmojiMessage{} })
+	RegisterMessage(C2SEnemyDuelBattleReadyMessageType, func() Content { return &C2SEnemyDuelBattleReadyMessage{} })
 }
 
 func RegisterMessage(msgType uint32, constructor func() Content) {
@@ -166,5 +167,19 @@ func (m *C2SEnemyDuelEmojiMessage) Unmarshal(payload []byte) error {
 		return err
 	}
 
+	return nil
+}
+
+type C2SEnemyDuelBattleReadyMessage struct{}
+
+func (m *C2SEnemyDuelBattleReadyMessage) ContentType() uint32 {
+	return C2SEnemyDuelBattleReadyMessageType
+}
+
+func (m *C2SEnemyDuelBattleReadyMessage) Marshal() ([]byte, error) {
+	panic("TODO")
+}
+
+func (m *C2SEnemyDuelBattleReadyMessage) Unmarshal(payload []byte) error {
 	return nil
 }
