@@ -72,7 +72,7 @@ func main() {
 				return
 			}
 
-			log.Printf("msg: %+v", content)
+			log.Printf("msg: %#v", content)
 		}(receivedEnv)
 
 		msgCnt++
