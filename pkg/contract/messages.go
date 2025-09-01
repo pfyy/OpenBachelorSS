@@ -9,4 +9,5 @@ const (
 	C2SEnemyDuelBattleReadyMessageType = 201
 	C2SEnemyDuelSceneJoinMessageType   = 219
 	C2SEnemyDuelRoundSettleMessageType = 217
+	C2SEnemyDuelBetMessageType         = 215
 )
