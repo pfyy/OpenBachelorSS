@@ -2,6 +2,7 @@ package contract
 
 import (
 	"bytes"
+	"encoding"
 	"encoding/binary"
 	"fmt"
 	"io"
@@ -101,7 +102,7 @@ func readPrefixedString(r io.Reader) (string, error) {
 
 func writePrefixedString(w io.Writer, s string) error {
 	if len(s) > 0xffff {
-		return fmt.Errorf("string to long (%d bytes)", len(s))
+		return fmt.Errorf("string too long (%d bytes)", len(s))
 	}
 
 	length := uint16(len(s))
@@ -115,6 +116,33 @@ func writePrefixedString(w io.Writer, s string) error {
 	}
 
 	return nil
+}
+
+func SerializeSlice[T encoding.BinaryMarshaler](items []T) ([]byte, error) {
+	if len(items) > 0xffff {
+		return nil, fmt.Errorf("slice too long (%d items)", len(items))
+	}
+
+	var buf bytes.Buffer
+
+	err := binary.Write(&buf, binary.BigEndian, uint16(len(items)))
+	if err != nil {
+		return nil, err
+	}
+
+	for _, item := range items {
+		itemBytes, err := item.MarshalBinary()
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = buf.Write(itemBytes)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return buf.Bytes(), nil
+
 }
 
 type S2CEnemyDuelEmojiMessage struct {
