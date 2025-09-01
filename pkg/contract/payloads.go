@@ -14,6 +14,7 @@ var messageRegistry = make(map[uint32]func() Content)
 func init() {
 	RegisterMessage(S2CEnemyDuelEmojiMessageType, func() Content { return &S2CEnemyDuelEmojiMessage{} })
 	RegisterMessage(S2CEnemyDuelHeartBeatMessageType, func() Content { return &S2CEnemyDuelHeartBeatMessage{} })
+	RegisterMessage(S2CEnemyDuelQuitMessageType, func() Content { return &S2CEnemyDuelQuitMessage{} })
 	RegisterMessage(C2SEnemyDuelEmojiMessageType, func() Content { return &C2SEnemyDuelEmojiMessage{} })
 	RegisterMessage(C2SEnemyDuelReadyMessageType, func() Content { return &C2SEnemyDuelReadyMessage{} })
 	RegisterMessage(C2SEnemyDuelJoinMessageType, func() Content { return &C2SEnemyDuelJoinMessage{} })
@@ -170,6 +171,22 @@ func (m *S2CEnemyDuelHeartBeatMessage) Marshal() ([]byte, error) {
 }
 
 func (m *S2CEnemyDuelHeartBeatMessage) Unmarshal(payload []byte) error {
+	panic("TODO")
+}
+
+type S2CEnemyDuelQuitMessage struct {
+}
+
+func (m *S2CEnemyDuelQuitMessage) ContentType() uint32 {
+	return S2CEnemyDuelQuitMessageType
+}
+
+func (m *S2CEnemyDuelQuitMessage) Marshal() ([]byte, error) {
+
+	return nil, nil
+}
+
+func (m *S2CEnemyDuelQuitMessage) Unmarshal(payload []byte) error {
 	panic("TODO")
 }
 

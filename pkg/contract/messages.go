@@ -3,6 +3,7 @@ package contract
 const (
 	S2CEnemyDuelEmojiMessageType     = 224
 	S2CEnemyDuelHeartBeatMessageType = 2
+	S2CEnemyDuelQuitMessageType      = 204
 )
 
 const (
