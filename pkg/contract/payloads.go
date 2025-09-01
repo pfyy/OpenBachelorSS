@@ -146,6 +146,33 @@ func SerializeSlice[T encoding.BinaryMarshaler](items []T) ([]byte, error) {
 
 }
 
+type FixedSize interface {
+	~uint8 | ~uint16 | ~uint32 | ~uint64 |
+		~int8 | ~int16 | ~int32 | ~int64 |
+		~float32 | ~float64
+}
+
+func SerializePrimitiveSlice[T FixedSize](items []T) ([]byte, error) {
+	if len(items) > 0xffff {
+		return nil, fmt.Errorf("slice too long (%d items)", len(items))
+	}
+
+	var buf bytes.Buffer
+
+	err := binary.Write(&buf, binary.BigEndian, uint16(len(items)))
+	if err != nil {
+		return nil, err
+	}
+
+	err = binary.Write(&buf, binary.BigEndian, items)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+
+}
+
 type S2CEnemyDuelEmojiMessage struct {
 	PlayerID   string
 	EmojiGroup string
