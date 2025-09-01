@@ -295,12 +295,66 @@ type EnemyDuelBattleStatusEntryData struct {
 	SideHistory []uint8
 }
 
+func (t *EnemyDuelBattleStatusEntryData) MarshalBinary() ([]byte, error) {
+	var buf bytes.Buffer
+
+	if err := binary.Write(&buf, binary.BigEndian, t.Seed); err != nil {
+		return nil, err
+	}
+
+	seedHistory, err := SerializePrimitiveSlice(t.SeedHistory)
+	if err != nil {
+		return nil, err
+	}
+	_, err = buf.Write(seedHistory)
+	if err != nil {
+		return nil, err
+	}
+
+	sideHistory, err := SerializePrimitiveSlice(t.SideHistory)
+	if err != nil {
+		return nil, err
+	}
+	_, err = buf.Write(sideHistory)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
 type EnemyDuelBattleStatusBetItem struct {
 	PlayerID string
 	Side     uint8
 	AllIn    uint8
 	Streak   uint8
 	UpdateTs uint64
+}
+
+func (t *EnemyDuelBattleStatusBetItem) MarshalBinary() ([]byte, error) {
+	var buf bytes.Buffer
+
+	if err := writePrefixedString(&buf, t.PlayerID); err != nil {
+		return nil, err
+	}
+
+	if err := binary.Write(&buf, binary.BigEndian, t.Side); err != nil {
+		return nil, err
+	}
+
+	if err := binary.Write(&buf, binary.BigEndian, t.AllIn); err != nil {
+		return nil, err
+	}
+
+	if err := binary.Write(&buf, binary.BigEndian, t.Streak); err != nil {
+		return nil, err
+	}
+
+	if err := binary.Write(&buf, binary.BigEndian, t.UpdateTs); err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
 }
 
 type EnemyDuelBattleStatusRoundLeaderBoard struct {
@@ -314,13 +368,51 @@ type EnemyDuelBattleStatusRoundLeaderBoard struct {
 	ShieldState uint8
 }
 
+func (t *EnemyDuelBattleStatusRoundLeaderBoard) MarshalBinary() ([]byte, error) {
+	var buf bytes.Buffer
+
+	if err := writePrefixedString(&buf, t.PlayerID); err != nil {
+		return nil, err
+	}
+
+	if err := binary.Write(&buf, binary.BigEndian, t.OldMoney); err != nil {
+		return nil, err
+	}
+
+	if err := binary.Write(&buf, binary.BigEndian, t.NewMoney); err != nil {
+		return nil, err
+	}
+
+	if err := binary.Write(&buf, binary.BigEndian, t.MaxRound); err != nil {
+		return nil, err
+	}
+
+	if err := binary.Write(&buf, binary.BigEndian, t.Streak); err != nil {
+		return nil, err
+	}
+
+	if err := binary.Write(&buf, binary.BigEndian, t.Result); err != nil {
+		return nil, err
+	}
+
+	if err := binary.Write(&buf, binary.BigEndian, t.Bet); err != nil {
+		return nil, err
+	}
+
+	if err := binary.Write(&buf, binary.BigEndian, t.ShieldState); err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
 type S2CEnemyDuelClientStateMessage struct {
 	State        uint8
 	Round        uint8
 	ForceEndTs   uint64
-	SrcEntryData []EnemyDuelBattleStatusEntryData
-	BetList      []EnemyDuelBattleStatusBetItem
-	LeaderBoard  []EnemyDuelBattleStatusRoundLeaderBoard
+	SrcEntryData []*EnemyDuelBattleStatusEntryData
+	BetList      []*EnemyDuelBattleStatusBetItem
+	LeaderBoard  []*EnemyDuelBattleStatusRoundLeaderBoard
 }
 
 func (m *S2CEnemyDuelClientStateMessage) ContentType() uint32 {
@@ -329,6 +421,45 @@ func (m *S2CEnemyDuelClientStateMessage) ContentType() uint32 {
 
 func (m *S2CEnemyDuelClientStateMessage) Marshal() ([]byte, error) {
 	var buf bytes.Buffer
+
+	if err := binary.Write(&buf, binary.BigEndian, m.State); err != nil {
+		return nil, err
+	}
+
+	if err := binary.Write(&buf, binary.BigEndian, m.Round); err != nil {
+		return nil, err
+	}
+
+	if err := binary.Write(&buf, binary.BigEndian, m.ForceEndTs); err != nil {
+		return nil, err
+	}
+
+	srcEntryData, err := SerializeSlice(m.SrcEntryData)
+	if err != nil {
+		return nil, err
+	}
+	_, err = buf.Write(srcEntryData)
+	if err != nil {
+		return nil, err
+	}
+
+	betList, err := SerializeSlice(m.BetList)
+	if err != nil {
+		return nil, err
+	}
+	_, err = buf.Write(betList)
+	if err != nil {
+		return nil, err
+	}
+
+	leaderBoard, err := SerializeSlice(m.LeaderBoard)
+	if err != nil {
+		return nil, err
+	}
+	_, err = buf.Write(leaderBoard)
+	if err != nil {
+		return nil, err
+	}
 
 	return buf.Bytes(), nil
 }
