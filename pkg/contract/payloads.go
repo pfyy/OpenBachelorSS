@@ -15,6 +15,7 @@ func init() {
 	RegisterMessage(S2CEnemyDuelEmojiMessageType, func() Content { return &S2CEnemyDuelEmojiMessage{} })
 	RegisterMessage(S2CEnemyDuelHeartBeatMessageType, func() Content { return &S2CEnemyDuelHeartBeatMessage{} })
 	RegisterMessage(S2CEnemyDuelQuitMessageType, func() Content { return &S2CEnemyDuelQuitMessage{} })
+	RegisterMessage(S2CEnemyDuelStepMessageType, func() Content { return &S2CEnemyDuelStepMessage{} })
 	RegisterMessage(C2SEnemyDuelEmojiMessageType, func() Content { return &C2SEnemyDuelEmojiMessage{} })
 	RegisterMessage(C2SEnemyDuelReadyMessageType, func() Content { return &C2SEnemyDuelReadyMessage{} })
 	RegisterMessage(C2SEnemyDuelJoinMessageType, func() Content { return &C2SEnemyDuelJoinMessage{} })
@@ -189,6 +190,49 @@ func (m *S2CEnemyDuelQuitMessage) Marshal() ([]byte, error) {
 func (m *S2CEnemyDuelQuitMessage) Unmarshal(payload []byte) error {
 	panic("TODO")
 }
+
+type S2CEnemyDuelStepMessage struct {
+	Index    uint32
+	Duration uint32
+	CheckSeq int32
+	Round    uint8
+}
+
+func (m *S2CEnemyDuelStepMessage) ContentType() uint32 {
+	return S2CEnemyDuelStepMessageType
+}
+
+func (m *S2CEnemyDuelStepMessage) Marshal() ([]byte, error) {
+	var buf bytes.Buffer
+
+	if err := binary.Write(&buf, binary.BigEndian, m.Index); err != nil {
+		return nil, err
+	}
+
+	if err := binary.Write(&buf, binary.BigEndian, m.Duration); err != nil {
+		return nil, err
+	}
+
+	if _, err := buf.Write([]byte{0, 0}); err != nil {
+		return nil, err
+	}
+
+	if err := binary.Write(&buf, binary.BigEndian, m.CheckSeq); err != nil {
+		return nil, err
+	}
+
+	if err := binary.Write(&buf, binary.BigEndian, m.Round); err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
+func (m *S2CEnemyDuelStepMessage) Unmarshal(payload []byte) error {
+	panic("TODO")
+}
+
+// ------------------------------
 
 type C2SEnemyDuelEmojiMessage struct {
 	EmojiGroup string
