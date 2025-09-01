@@ -51,14 +51,21 @@ func main() {
 			break
 		}
 
-		func() {
-			defer func() { recover() }()
+		func(env *protocol.Envelop) {
+			defer func() {
+				if r := recover(); r != nil {
+					log.Printf("panic while getting content of %+v: %v", env, err)
+				}
+			}()
 
-			content, err := contract.FromEnvelop(receivedEnv)
-			if err == nil {
-				log.Printf("msg: %+v", content)
+			content, err := contract.FromEnvelop(env)
+			if err != nil {
+				log.Printf("failed to get content of %+v: %v", env, err)
+				return
 			}
-		}()
+
+			log.Printf("msg: %+v", content)
+		}(receivedEnv)
 
 		msgCnt++
 		msgTypeMap[receivedEnv.Type]++
