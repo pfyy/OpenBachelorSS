@@ -6,6 +6,7 @@ const (
 	S2CEnemyDuelQuitMessageType        = 204
 	S2CEnemyDuelStepMessageType        = 210
 	S2CEnemyDuelClientStateMessageType = 214
+	S2CEnemyDuelJoinMessageType        = 220
 )
 
 const (
