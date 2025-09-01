@@ -16,10 +16,10 @@ func init() {
 	RegisterMessage(S2CEnemyDuelHeartBeatMessageType, func() Content { return &S2CEnemyDuelHeartBeatMessage{} })
 	RegisterMessage(C2SEnemyDuelEmojiMessageType, func() Content { return &C2SEnemyDuelEmojiMessage{} })
 	RegisterMessage(C2SEnemyDuelBattleReadyMessageType, func() Content { return &C2SEnemyDuelBattleReadyMessage{} })
-	RegisterMessage(C2SEnemyDuelSceneJoinMessageType, func() Content { return &C2SEnemyDuelSceneJoinMessage{} })
+	RegisterMessage(C2SEnemyDuelJoinMessageType, func() Content { return &C2SEnemyDuelJoinMessage{} })
 	RegisterMessage(C2SEnemyDuelRoundSettleMessageType, func() Content { return &C2SEnemyDuelRoundSettleMessage{} })
 	RegisterMessage(C2SEnemyDuelBetMessageType, func() Content { return &C2SEnemyDuelBetMessage{} })
-	RegisterMessage(C2SEnemyDuelSceneHistoryMessageType, func() Content { return &C2SEnemyDuelSceneHistoryMessage{} })
+	RegisterMessage(C2SEnemyDuelHistoryMessageType, func() Content { return &C2SEnemyDuelHistoryMessage{} })
 	RegisterMessage(C2SEnemyDuelQuitMessageType, func() Content { return &C2SEnemyDuelQuitMessage{} })
 	RegisterMessage(C2SEnemyDuelHeartBeatMessageType, func() Content { return &C2SEnemyDuelHeartBeatMessage{} })
 }
@@ -218,21 +218,21 @@ func (m *C2SEnemyDuelBattleReadyMessage) Unmarshal(payload []byte) error {
 	return nil
 }
 
-type C2SEnemyDuelSceneJoinMessage struct {
+type C2SEnemyDuelJoinMessage struct {
 	PlayerID string
 	SceneID  string
 	Token    string
 }
 
-func (m *C2SEnemyDuelSceneJoinMessage) ContentType() uint32 {
-	return C2SEnemyDuelSceneJoinMessageType
+func (m *C2SEnemyDuelJoinMessage) ContentType() uint32 {
+	return C2SEnemyDuelJoinMessageType
 }
 
-func (m *C2SEnemyDuelSceneJoinMessage) Marshal() ([]byte, error) {
+func (m *C2SEnemyDuelJoinMessage) Marshal() ([]byte, error) {
 	panic("TODO")
 }
 
-func (m *C2SEnemyDuelSceneJoinMessage) Unmarshal(payload []byte) error {
+func (m *C2SEnemyDuelJoinMessage) Unmarshal(payload []byte) error {
 	reader := bytes.NewReader(payload)
 
 	var err error
@@ -335,19 +335,19 @@ func (m *C2SEnemyDuelBetMessage) Unmarshal(payload []byte) error {
 	return nil
 }
 
-type C2SEnemyDuelSceneHistoryMessage struct {
+type C2SEnemyDuelHistoryMessage struct {
 	Seq uint32
 }
 
-func (m *C2SEnemyDuelSceneHistoryMessage) ContentType() uint32 {
-	return C2SEnemyDuelSceneHistoryMessageType
+func (m *C2SEnemyDuelHistoryMessage) ContentType() uint32 {
+	return C2SEnemyDuelHistoryMessageType
 }
 
-func (m *C2SEnemyDuelSceneHistoryMessage) Marshal() ([]byte, error) {
+func (m *C2SEnemyDuelHistoryMessage) Marshal() ([]byte, error) {
 	panic("TODO")
 }
 
-func (m *C2SEnemyDuelSceneHistoryMessage) Unmarshal(payload []byte) error {
+func (m *C2SEnemyDuelHistoryMessage) Unmarshal(payload []byte) error {
 	reader := bytes.NewReader(payload)
 
 	var err error
