@@ -15,7 +15,7 @@ func init() {
 	RegisterMessage(S2CEnemyDuelEmojiMessageType, func() Content { return &S2CEnemyDuelEmojiMessage{} })
 	RegisterMessage(S2CEnemyDuelHeartBeatMessageType, func() Content { return &S2CEnemyDuelHeartBeatMessage{} })
 	RegisterMessage(C2SEnemyDuelEmojiMessageType, func() Content { return &C2SEnemyDuelEmojiMessage{} })
-	RegisterMessage(C2SEnemyDuelBattleReadyMessageType, func() Content { return &C2SEnemyDuelBattleReadyMessage{} })
+	RegisterMessage(C2SEnemyDuelReadyMessageType, func() Content { return &C2SEnemyDuelReadyMessage{} })
 	RegisterMessage(C2SEnemyDuelJoinMessageType, func() Content { return &C2SEnemyDuelJoinMessage{} })
 	RegisterMessage(C2SEnemyDuelRoundSettleMessageType, func() Content { return &C2SEnemyDuelRoundSettleMessage{} })
 	RegisterMessage(C2SEnemyDuelBetMessageType, func() Content { return &C2SEnemyDuelBetMessage{} })
@@ -204,17 +204,17 @@ func (m *C2SEnemyDuelEmojiMessage) Unmarshal(payload []byte) error {
 	return nil
 }
 
-type C2SEnemyDuelBattleReadyMessage struct{}
+type C2SEnemyDuelReadyMessage struct{}
 
-func (m *C2SEnemyDuelBattleReadyMessage) ContentType() uint32 {
-	return C2SEnemyDuelBattleReadyMessageType
+func (m *C2SEnemyDuelReadyMessage) ContentType() uint32 {
+	return C2SEnemyDuelReadyMessageType
 }
 
-func (m *C2SEnemyDuelBattleReadyMessage) Marshal() ([]byte, error) {
+func (m *C2SEnemyDuelReadyMessage) Marshal() ([]byte, error) {
 	panic("TODO")
 }
 
-func (m *C2SEnemyDuelBattleReadyMessage) Unmarshal(payload []byte) error {
+func (m *C2SEnemyDuelReadyMessage) Unmarshal(payload []byte) error {
 	return nil
 }
 
