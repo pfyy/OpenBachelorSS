@@ -173,6 +173,8 @@ func SerializePrimitiveSlice[T FixedSize](items []T) ([]byte, error) {
 
 }
 
+// ------------------------------
+
 type S2CEnemyDuelEmojiMessage struct {
 	PlayerID   string
 	EmojiGroup string
