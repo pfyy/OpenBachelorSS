@@ -1,7 +1,8 @@
 package contract
 
 const (
-	S2CEnemyDuelEmojiMessageType = 224
+	S2CEnemyDuelEmojiMessageType     = 224
+	S2CEnemyDuelHeartBeatMessageType = 2
 )
 
 const (

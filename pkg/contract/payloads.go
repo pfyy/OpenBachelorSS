@@ -13,6 +13,7 @@ var messageRegistry = make(map[uint32]func() Content)
 
 func init() {
 	RegisterMessage(S2CEnemyDuelEmojiMessageType, func() Content { return &S2CEnemyDuelEmojiMessage{} })
+	RegisterMessage(S2CEnemyDuelHeartBeatMessageType, func() Content { return &S2CEnemyDuelHeartBeatMessage{} })
 	RegisterMessage(C2SEnemyDuelEmojiMessageType, func() Content { return &C2SEnemyDuelEmojiMessage{} })
 	RegisterMessage(C2SEnemyDuelBattleReadyMessageType, func() Content { return &C2SEnemyDuelBattleReadyMessage{} })
 	RegisterMessage(C2SEnemyDuelSceneJoinMessageType, func() Content { return &C2SEnemyDuelSceneJoinMessage{} })
@@ -142,6 +143,33 @@ func (m *S2CEnemyDuelEmojiMessage) Marshal() ([]byte, error) {
 }
 
 func (m *S2CEnemyDuelEmojiMessage) Unmarshal(payload []byte) error {
+	panic("TODO")
+}
+
+type S2CEnemyDuelHeartBeatMessage struct {
+	Seq  uint32
+	Time uint64
+}
+
+func (m *S2CEnemyDuelHeartBeatMessage) ContentType() uint32 {
+	return S2CEnemyDuelHeartBeatMessageType
+}
+
+func (m *S2CEnemyDuelHeartBeatMessage) Marshal() ([]byte, error) {
+	var buf bytes.Buffer
+
+	if err := binary.Write(&buf, binary.BigEndian, m.Seq); err != nil {
+		return nil, err
+	}
+
+	if err := binary.Write(&buf, binary.BigEndian, m.Time); err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
+func (m *S2CEnemyDuelHeartBeatMessage) Unmarshal(payload []byte) error {
 	panic("TODO")
 }
 
