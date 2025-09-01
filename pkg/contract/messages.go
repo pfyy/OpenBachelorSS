@@ -12,4 +12,5 @@ const (
 	C2SEnemyDuelBetMessageType          = 215
 	C2SEnemyDuelSceneHistoryMessageType = 211
 	C2SEnemyDuelQuitMessageType         = 203
+	C2SEnemyDuelHeartBeatMessageType    = 1
 )

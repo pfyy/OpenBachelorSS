@@ -20,6 +20,7 @@ func init() {
 	RegisterMessage(C2SEnemyDuelBetMessageType, func() Content { return &C2SEnemyDuelBetMessage{} })
 	RegisterMessage(C2SEnemyDuelSceneHistoryMessageType, func() Content { return &C2SEnemyDuelSceneHistoryMessage{} })
 	RegisterMessage(C2SEnemyDuelQuitMessageType, func() Content { return &C2SEnemyDuelQuitMessage{} })
+	RegisterMessage(C2SEnemyDuelHeartBeatMessageType, func() Content { return &C2SEnemyDuelHeartBeatMessage{} })
 }
 
 func RegisterMessage(msgType uint32, constructor func() Content) {
@@ -342,5 +343,36 @@ func (m *C2SEnemyDuelQuitMessage) Marshal() ([]byte, error) {
 }
 
 func (m *C2SEnemyDuelQuitMessage) Unmarshal(payload []byte) error {
+	return nil
+}
+
+type C2SEnemyDuelHeartBeatMessage struct {
+	Seq  uint32
+	Time uint64
+}
+
+func (m *C2SEnemyDuelHeartBeatMessage) ContentType() uint32 {
+	return C2SEnemyDuelHeartBeatMessageType
+}
+
+func (m *C2SEnemyDuelHeartBeatMessage) Marshal() ([]byte, error) {
+	panic("TODO")
+}
+
+func (m *C2SEnemyDuelHeartBeatMessage) Unmarshal(payload []byte) error {
+	reader := bytes.NewReader(payload)
+
+	var err error
+
+	err = binary.Read(reader, binary.BigEndian, &m.Seq)
+	if err != nil {
+		return err
+	}
+
+	err = binary.Read(reader, binary.BigEndian, &m.Time)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
