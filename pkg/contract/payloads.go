@@ -9,16 +9,28 @@ import (
 	"github.com/OpenBachelor/OpenBachelorSS/pkg/protocol"
 )
 
+var messageRegistry = make(map[uint32]func() Content)
+
+func init() {
+	RegisterMessage(S2CEnemyDuelEmojiMessageType, func() Content { return &S2CEnemyDuelEmojiMessage{} })
+	RegisterMessage(C2SEnemyDuelEmojiMessageType, func() Content { return &C2SEnemyDuelEmojiMessage{} })
+}
+
+func RegisterMessage(msgType uint32, constructor func() Content) {
+	if _, exists := messageRegistry[msgType]; exists {
+		panic(fmt.Sprintf("message type %d is already registered", msgType))
+	}
+	messageRegistry[msgType] = constructor
+}
+
 func FromEnvelop(env *protocol.Envelop) (Content, error) {
-	var c Content
-	switch env.Type {
-	case S2CEnemyDuelEmojiMessageType:
-		c = &S2CEnemyDuelEmojiMessage{}
-	case C2SEnemyDuelEmojiMessageType:
-		c = &C2SEnemyDuelEmojiMessage{}
-	default:
+	constructor, ok := messageRegistry[env.Type]
+
+	if !ok {
 		return nil, fmt.Errorf("unknown envelop")
 	}
+
+	c := constructor()
 
 	err := c.Unmarshal(env.Payload)
 	if err != nil {
