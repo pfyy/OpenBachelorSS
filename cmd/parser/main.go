@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"io"
 	"log"
 	"net"
@@ -12,11 +13,14 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 2 {
+	verbose := flag.Bool("verbose", false, "print err")
+	flag.Parse()
+
+	if len(flag.Args()) < 1 {
 		log.Fatalf("raw stream file not provided")
 	}
 
-	streamFilePath := os.Args[1]
+	streamFilePath := flag.Args()[0]
 	streamData, err := os.ReadFile(streamFilePath)
 	if err != nil {
 		log.Fatalf("failed to read raw stream file '%s': %v", streamFilePath, err)
@@ -54,13 +58,17 @@ func main() {
 		func(env *protocol.Envelop) {
 			defer func() {
 				if r := recover(); r != nil {
-					log.Printf("panic while getting content of %+v: %v", env, err)
+					if *verbose {
+						log.Printf("panic while getting content of %+v: %v", env, err)
+					}
 				}
 			}()
 
 			content, err := contract.FromEnvelop(env)
 			if err != nil {
-				log.Printf("failed to get content of %+v: %v", env, err)
+				if *verbose {
+					log.Printf("failed to get content of %+v: %v", env, err)
+				}
 				return
 			}
 
