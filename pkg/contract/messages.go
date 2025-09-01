@@ -1,11 +1,11 @@
 package contract
 
 const (
-	S2CEnemyDuelEmojiMessageType     = 224
-	S2CEnemyDuelHeartBeatMessageType = 2
-	S2CEnemyDuelQuitMessageType      = 204
-	S2CEnemyDuelStepMessageType      = 210
-	S2CEnemyClientStateMessageType   = 214
+	S2CEnemyDuelEmojiMessageType       = 224
+	S2CEnemyDuelHeartBeatMessageType   = 2
+	S2CEnemyDuelQuitMessageType        = 204
+	S2CEnemyDuelStepMessageType        = 210
+	S2CEnemyDuelClientStateMessageType = 214
 )
 
 const (
