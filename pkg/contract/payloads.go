@@ -19,6 +19,7 @@ func init() {
 	RegisterMessage(C2SEnemyDuelRoundSettleMessageType, func() Content { return &C2SEnemyDuelRoundSettleMessage{} })
 	RegisterMessage(C2SEnemyDuelBetMessageType, func() Content { return &C2SEnemyDuelBetMessage{} })
 	RegisterMessage(C2SEnemyDuelSceneHistoryMessageType, func() Content { return &C2SEnemyDuelSceneHistoryMessage{} })
+	RegisterMessage(C2SEnemyDuelQuitMessageType, func() Content { return &C2SEnemyDuelQuitMessage{} })
 }
 
 func RegisterMessage(msgType uint32, constructor func() Content) {
@@ -327,5 +328,19 @@ func (m *C2SEnemyDuelSceneHistoryMessage) Unmarshal(payload []byte) error {
 		return err
 	}
 
+	return nil
+}
+
+type C2SEnemyDuelQuitMessage struct{}
+
+func (m *C2SEnemyDuelQuitMessage) ContentType() uint32 {
+	return C2SEnemyDuelQuitMessageType
+}
+
+func (m *C2SEnemyDuelQuitMessage) Marshal() ([]byte, error) {
+	panic("TODO")
+}
+
+func (m *C2SEnemyDuelQuitMessage) Unmarshal(payload []byte) error {
 	return nil
 }
