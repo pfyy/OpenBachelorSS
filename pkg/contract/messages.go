@@ -5,6 +5,7 @@ const (
 	S2CEnemyDuelHeartBeatMessageType = 2
 	S2CEnemyDuelQuitMessageType      = 204
 	S2CEnemyDuelStepMessageType      = 210
+	S2CEnemyClientStateMessageType   = 214
 )
 
 const (

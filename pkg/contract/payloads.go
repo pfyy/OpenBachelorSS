@@ -17,6 +17,7 @@ func init() {
 	RegisterMessage(S2CEnemyDuelHeartBeatMessageType, func() Content { return &S2CEnemyDuelHeartBeatMessage{} })
 	RegisterMessage(S2CEnemyDuelQuitMessageType, func() Content { return &S2CEnemyDuelQuitMessage{} })
 	RegisterMessage(S2CEnemyDuelStepMessageType, func() Content { return &S2CEnemyDuelStepMessage{} })
+	RegisterMessage(S2CEnemyClientStateMessageType, func() Content { return &S2CEnemyClientStateMessage{} })
 
 	RegisterMessage(C2SEnemyDuelEmojiMessageType, func() Content { return &C2SEnemyDuelEmojiMessage{} })
 	RegisterMessage(C2SEnemyDuelReadyMessageType, func() Content { return &C2SEnemyDuelReadyMessage{} })
@@ -258,6 +259,23 @@ func (m *S2CEnemyDuelStepMessage) Marshal() ([]byte, error) {
 }
 
 func (m *S2CEnemyDuelStepMessage) Unmarshal(payload []byte) error {
+	panic("TODO")
+}
+
+type S2CEnemyClientStateMessage struct {
+}
+
+func (m *S2CEnemyClientStateMessage) ContentType() uint32 {
+	return S2CEnemyClientStateMessageType
+}
+
+func (m *S2CEnemyClientStateMessage) Marshal() ([]byte, error) {
+	var buf bytes.Buffer
+
+	return buf.Bytes(), nil
+}
+
+func (m *S2CEnemyClientStateMessage) Unmarshal(payload []byte) error {
 	panic("TODO")
 }
 
