@@ -18,6 +18,7 @@ func init() {
 	RegisterMessage(C2SEnemyDuelSceneJoinMessageType, func() Content { return &C2SEnemyDuelSceneJoinMessage{} })
 	RegisterMessage(C2SEnemyDuelRoundSettleMessageType, func() Content { return &C2SEnemyDuelRoundSettleMessage{} })
 	RegisterMessage(C2SEnemyDuelBetMessageType, func() Content { return &C2SEnemyDuelBetMessage{} })
+	RegisterMessage(C2SEnemyDuelSceneHistoryMessageType, func() Content { return &C2SEnemyDuelSceneHistoryMessage{} })
 }
 
 func RegisterMessage(msgType uint32, constructor func() Content) {
@@ -297,6 +298,31 @@ func (m *C2SEnemyDuelBetMessage) Unmarshal(payload []byte) error {
 	}
 
 	err = binary.Read(reader, binary.BigEndian, &m.AllIn)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type C2SEnemyDuelSceneHistoryMessage struct {
+	Seq uint32
+}
+
+func (m *C2SEnemyDuelSceneHistoryMessage) ContentType() uint32 {
+	return C2SEnemyDuelSceneHistoryMessageType
+}
+
+func (m *C2SEnemyDuelSceneHistoryMessage) Marshal() ([]byte, error) {
+	panic("TODO")
+}
+
+func (m *C2SEnemyDuelSceneHistoryMessage) Unmarshal(payload []byte) error {
+	reader := bytes.NewReader(payload)
+
+	var err error
+
+	err = binary.Read(reader, binary.BigEndian, &m.Seq)
 	if err != nil {
 		return err
 	}
