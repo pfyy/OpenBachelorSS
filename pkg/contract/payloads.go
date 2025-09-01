@@ -16,6 +16,7 @@ func init() {
 	RegisterMessage(C2SEnemyDuelEmojiMessageType, func() Content { return &C2SEnemyDuelEmojiMessage{} })
 	RegisterMessage(C2SEnemyDuelBattleReadyMessageType, func() Content { return &C2SEnemyDuelBattleReadyMessage{} })
 	RegisterMessage(C2SEnemyDuelSceneJoinMessageType, func() Content { return &C2SEnemyDuelSceneJoinMessage{} })
+	RegisterMessage(C2SEnemyDuelRoundSettleMessageType, func() Content { return &C2SEnemyDuelRoundSettleMessage{} })
 }
 
 func RegisterMessage(msgType uint32, constructor func() Content) {
@@ -215,6 +216,43 @@ func (m *C2SEnemyDuelSceneJoinMessage) Unmarshal(payload []byte) error {
 	}
 
 	m.Token, err = readPrefixedString(reader)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type C2SEnemyDuelRoundSettleMessage struct {
+	Side     uint8
+	Info     string
+	InfoHash string
+}
+
+func (m *C2SEnemyDuelRoundSettleMessage) ContentType() uint32 {
+	return C2SEnemyDuelRoundSettleMessageType
+}
+
+func (m *C2SEnemyDuelRoundSettleMessage) Marshal() ([]byte, error) {
+	panic("TODO")
+}
+
+func (m *C2SEnemyDuelRoundSettleMessage) Unmarshal(payload []byte) error {
+	reader := bytes.NewReader(payload)
+
+	var err error
+
+	err = binary.Read(reader, binary.BigEndian, &m.Side)
+	if err != nil {
+		return err
+	}
+
+	m.Info, err = readPrefixedString(reader)
+	if err != nil {
+		return err
+	}
+
+	m.InfoHash, err = readPrefixedString(reader)
 	if err != nil {
 		return err
 	}
