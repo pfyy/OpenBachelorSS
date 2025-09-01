@@ -45,6 +45,7 @@ func main() {
 
 	msgCnt := 0
 	msgTypeMap := make(map[uint32]int)
+	parsedMsgCnt := 0
 	for {
 		receivedEnv, err := protocol.ReadEnvelop(serverConn)
 		if err == io.EOF {
@@ -72,6 +73,7 @@ func main() {
 				return
 			}
 
+			parsedMsgCnt++
 			log.Printf("msg: %#v", content)
 		}(receivedEnv)
 
@@ -82,5 +84,6 @@ func main() {
 	wg.Wait()
 
 	log.Printf("num of msg: %d", msgCnt)
+	log.Printf("num of parsed msg: %d", parsedMsgCnt)
 	log.Printf("msg type: %v", msgTypeMap)
 }
