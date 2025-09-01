@@ -471,7 +471,48 @@ func (m *S2CEnemyDuelClientStateMessage) Unmarshal(payload []byte) error {
 	panic("TODO")
 }
 
+type EnemyDuelServicePlayer struct {
+	PlayerID   string
+	AvatarID   string
+	NickName   string
+	AvatarType uint8
+	HaveShield uint8
+}
+
+func (t *EnemyDuelServicePlayer) MarshalBinary() ([]byte, error) {
+	var buf bytes.Buffer
+
+	if err := writePrefixedString(&buf, t.PlayerID); err != nil {
+		return nil, err
+	}
+
+	if err := writePrefixedString(&buf, t.AvatarID); err != nil {
+		return nil, err
+	}
+
+	if err := writePrefixedString(&buf, t.NickName); err != nil {
+		return nil, err
+	}
+
+	if err := binary.Write(&buf, binary.BigEndian, t.AvatarType); err != nil {
+		return nil, err
+	}
+
+	if err := binary.Write(&buf, binary.BigEndian, t.HaveShield); err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
 type S2CEnemyDuelJoinMessage struct {
+	RetCode       uint32
+	NowTs         uint64
+	SceneCreateTs uint64
+	NewToken      string
+	StageID       string
+	StageSeed     uint32
+	Players       []*EnemyDuelServicePlayer
 }
 
 func (m *S2CEnemyDuelJoinMessage) ContentType() uint32 {
@@ -480,6 +521,43 @@ func (m *S2CEnemyDuelJoinMessage) ContentType() uint32 {
 
 func (m *S2CEnemyDuelJoinMessage) Marshal() ([]byte, error) {
 	var buf bytes.Buffer
+
+	if err := binary.Write(&buf, binary.BigEndian, m.RetCode); err != nil {
+		return nil, err
+	}
+
+	if err := binary.Write(&buf, binary.BigEndian, m.NowTs); err != nil {
+		return nil, err
+	}
+
+	if err := binary.Write(&buf, binary.BigEndian, m.SceneCreateTs); err != nil {
+		return nil, err
+	}
+
+	if err := writePrefixedString(&buf, m.NewToken); err != nil {
+		return nil, err
+	}
+
+	if err := writePrefixedString(&buf, m.StageID); err != nil {
+		return nil, err
+	}
+
+	if err := binary.Write(&buf, binary.BigEndian, m.StageSeed); err != nil {
+		return nil, err
+	}
+
+	players, err := SerializeSlice(m.Players)
+	if err != nil {
+		return nil, err
+	}
+	_, err = buf.Write(players)
+	if err != nil {
+		return nil, err
+	}
+
+	if _, err := buf.Write([]byte{0, 0}); err != nil {
+		return nil, err
+	}
 
 	return buf.Bytes(), nil
 }
