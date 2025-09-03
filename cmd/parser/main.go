@@ -11,6 +11,7 @@ import (
 
 	"github.com/OpenBachelor/OpenBachelorSS/pkg/contract"
 	"github.com/OpenBachelor/OpenBachelorSS/pkg/protocol"
+	"github.com/davecgh/go-spew/spew"
 )
 
 func main() {
@@ -76,7 +77,7 @@ func main() {
 			}
 
 			parsedMsgCnt++
-			log.Printf("msg: %#v", content)
+			spew.Dump(content)
 
 			func(c contract.Content, e *protocol.Envelop) {
 				defer func() {
