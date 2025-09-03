@@ -19,6 +19,7 @@ func init() {
 	RegisterMessage(S2CEnemyDuelStepMessageType, func() Content { return &S2CEnemyDuelStepMessage{} })
 	RegisterMessage(S2CEnemyDuelClientStateMessageType, func() Content { return &S2CEnemyDuelClientStateMessage{} })
 	RegisterMessage(S2CEnemyDuelJoinMessageType, func() Content { return &S2CEnemyDuelJoinMessage{} })
+	RegisterMessage(S2CEnemyDuelEndMessageType, func() Content { return &S2CEnemyDuelEndMessage{} })
 
 	RegisterMessage(C2SEnemyDuelEmojiMessageType, func() Content { return &C2SEnemyDuelEmojiMessage{} })
 	RegisterMessage(C2SEnemyDuelReadyMessageType, func() Content { return &C2SEnemyDuelReadyMessage{} })
@@ -28,6 +29,7 @@ func init() {
 	RegisterMessage(C2SEnemyDuelHistoryMessageType, func() Content { return &C2SEnemyDuelHistoryMessage{} })
 	RegisterMessage(C2SEnemyDuelQuitMessageType, func() Content { return &C2SEnemyDuelQuitMessage{} })
 	RegisterMessage(C2SEnemyDuelHeartBeatMessageType, func() Content { return &C2SEnemyDuelHeartBeatMessage{} })
+	RegisterMessage(C2SEnemyDuelFinalSettleMessageType, func() Content { return &C2SEnemyDuelFinalSettleMessage{} })
 }
 
 func RegisterMessage(msgType uint32, constructor func() Content) {
@@ -917,6 +919,38 @@ func (m *S2CEnemyDuelJoinMessage) Unmarshal(payload []byte) error {
 	return nil
 }
 
+type S2CEnemyDuelEndMessage struct {
+	Reason uint8
+}
+
+func (m *S2CEnemyDuelEndMessage) ContentType() uint32 {
+	return S2CEnemyDuelEndMessageType
+}
+
+func (m *S2CEnemyDuelEndMessage) Marshal() ([]byte, error) {
+	var buf bytes.Buffer
+	var err error
+
+	err = binary.Write(&buf, binary.BigEndian, m.Reason)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
+func (m *S2CEnemyDuelEndMessage) Unmarshal(payload []byte) error {
+	reader := bytes.NewReader(payload)
+	var err error
+
+	err = binary.Read(reader, binary.BigEndian, &m.Reason)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ------------------------------
 
 type C2SEnemyDuelEmojiMessage struct {
@@ -1235,5 +1269,19 @@ func (m *C2SEnemyDuelHeartBeatMessage) Unmarshal(payload []byte) error {
 		return err
 	}
 
+	return nil
+}
+
+type C2SEnemyDuelFinalSettleMessage struct{}
+
+func (m *C2SEnemyDuelFinalSettleMessage) ContentType() uint32 {
+	return C2SEnemyDuelFinalSettleMessageType
+}
+
+func (m *C2SEnemyDuelFinalSettleMessage) Marshal() ([]byte, error) {
+	return nil, nil
+}
+
+func (m *C2SEnemyDuelFinalSettleMessage) Unmarshal(payload []byte) error {
 	return nil
 }

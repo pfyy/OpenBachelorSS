@@ -7,6 +7,7 @@ const (
 	S2CEnemyDuelStepMessageType        = 210
 	S2CEnemyDuelClientStateMessageType = 214
 	S2CEnemyDuelJoinMessageType        = 220
+	S2CEnemyDuelEndMessageType         = 206
 )
 
 const (
@@ -18,4 +19,5 @@ const (
 	C2SEnemyDuelHistoryMessageType     = 211
 	C2SEnemyDuelQuitMessageType        = 203
 	C2SEnemyDuelHeartBeatMessageType   = 1
+	C2SEnemyDuelFinalSettleMessageType = 221
 )
