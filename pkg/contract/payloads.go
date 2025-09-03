@@ -715,7 +715,6 @@ func (m *C2SEnemyDuelRoundSettleMessage) Marshal() ([]byte, error) {
 
 func (m *C2SEnemyDuelRoundSettleMessage) Unmarshal(payload []byte) error {
 	reader := bytes.NewReader(payload)
-
 	var err error
 
 	err = binary.Read(reader, binary.BigEndian, &m.Side)
@@ -776,7 +775,6 @@ func (m *C2SEnemyDuelBetMessage) Marshal() ([]byte, error) {
 
 func (m *C2SEnemyDuelBetMessage) Unmarshal(payload []byte) error {
 	reader := bytes.NewReader(payload)
-
 	var err error
 
 	m.PlayerID, err = readPrefixedString(reader)
@@ -824,7 +822,6 @@ func (m *C2SEnemyDuelHistoryMessage) Marshal() ([]byte, error) {
 
 func (m *C2SEnemyDuelHistoryMessage) Unmarshal(payload []byte) error {
 	reader := bytes.NewReader(payload)
-
 	var err error
 
 	err = binary.Read(reader, binary.BigEndian, &m.Seq)
@@ -877,7 +874,6 @@ func (m *C2SEnemyDuelHeartBeatMessage) Marshal() ([]byte, error) {
 
 func (m *C2SEnemyDuelHeartBeatMessage) Unmarshal(payload []byte) error {
 	reader := bytes.NewReader(payload)
-
 	var err error
 
 	err = binary.Read(reader, binary.BigEndian, &m.Seq)
