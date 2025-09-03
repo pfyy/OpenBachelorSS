@@ -188,16 +188,20 @@ func (m *S2CEnemyDuelEmojiMessage) ContentType() uint32 {
 
 func (m *S2CEnemyDuelEmojiMessage) Marshal() ([]byte, error) {
 	var buf bytes.Buffer
+	var err error
 
-	if err := writePrefixedString(&buf, m.PlayerID); err != nil {
+	err = writePrefixedString(&buf, m.PlayerID)
+	if err != nil {
 		return nil, err
 	}
 
-	if err := writePrefixedString(&buf, m.EmojiGroup); err != nil {
+	err = writePrefixedString(&buf, m.EmojiGroup)
+	if err != nil {
 		return nil, err
 	}
 
-	if err := writePrefixedString(&buf, m.EmojiID); err != nil {
+	err = writePrefixedString(&buf, m.EmojiID)
+	if err != nil {
 		return nil, err
 	}
 
@@ -205,7 +209,25 @@ func (m *S2CEnemyDuelEmojiMessage) Marshal() ([]byte, error) {
 }
 
 func (m *S2CEnemyDuelEmojiMessage) Unmarshal(payload []byte) error {
-	panic("TODO")
+	reader := bytes.NewReader(payload)
+	var err error
+
+	m.PlayerID, err = readPrefixedString(reader)
+	if err != nil {
+		return err
+	}
+
+	m.EmojiGroup, err = readPrefixedString(reader)
+	if err != nil {
+		return err
+	}
+
+	m.EmojiID, err = readPrefixedString(reader)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type S2CEnemyDuelHeartBeatMessage struct {
@@ -219,12 +241,15 @@ func (m *S2CEnemyDuelHeartBeatMessage) ContentType() uint32 {
 
 func (m *S2CEnemyDuelHeartBeatMessage) Marshal() ([]byte, error) {
 	var buf bytes.Buffer
+	var err error
 
-	if err := binary.Write(&buf, binary.BigEndian, m.Seq); err != nil {
+	err = binary.Write(&buf, binary.BigEndian, m.Seq)
+	if err != nil {
 		return nil, err
 	}
 
-	if err := binary.Write(&buf, binary.BigEndian, m.Time); err != nil {
+	err = binary.Write(&buf, binary.BigEndian, m.Time)
+	if err != nil {
 		return nil, err
 	}
 
@@ -232,7 +257,20 @@ func (m *S2CEnemyDuelHeartBeatMessage) Marshal() ([]byte, error) {
 }
 
 func (m *S2CEnemyDuelHeartBeatMessage) Unmarshal(payload []byte) error {
-	panic("TODO")
+	reader := bytes.NewReader(payload)
+	var err error
+
+	err = binary.Read(reader, binary.BigEndian, &m.Seq)
+	if err != nil {
+		return err
+	}
+
+	err = binary.Read(reader, binary.BigEndian, &m.Time)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type S2CEnemyDuelQuitMessage struct {
@@ -248,7 +286,7 @@ func (m *S2CEnemyDuelQuitMessage) Marshal() ([]byte, error) {
 }
 
 func (m *S2CEnemyDuelQuitMessage) Unmarshal(payload []byte) error {
-	panic("TODO")
+	return nil
 }
 
 type S2CEnemyDuelStepMessage struct {
@@ -264,24 +302,30 @@ func (m *S2CEnemyDuelStepMessage) ContentType() uint32 {
 
 func (m *S2CEnemyDuelStepMessage) Marshal() ([]byte, error) {
 	var buf bytes.Buffer
+	var err error
 
-	if err := binary.Write(&buf, binary.BigEndian, m.Index); err != nil {
+	err = binary.Write(&buf, binary.BigEndian, m.Index)
+	if err != nil {
 		return nil, err
 	}
 
-	if err := binary.Write(&buf, binary.BigEndian, m.Duration); err != nil {
+	err = binary.Write(&buf, binary.BigEndian, m.Duration)
+	if err != nil {
 		return nil, err
 	}
 
-	if _, err := buf.Write([]byte{0, 0}); err != nil {
+	_, err = buf.Write([]byte{0, 0})
+	if err != nil {
 		return nil, err
 	}
 
-	if err := binary.Write(&buf, binary.BigEndian, m.CheckSeq); err != nil {
+	err = binary.Write(&buf, binary.BigEndian, m.CheckSeq)
+	if err != nil {
 		return nil, err
 	}
 
-	if err := binary.Write(&buf, binary.BigEndian, m.Round); err != nil {
+	err = binary.Write(&buf, binary.BigEndian, m.Round)
+	if err != nil {
 		return nil, err
 	}
 
@@ -289,7 +333,35 @@ func (m *S2CEnemyDuelStepMessage) Marshal() ([]byte, error) {
 }
 
 func (m *S2CEnemyDuelStepMessage) Unmarshal(payload []byte) error {
-	panic("TODO")
+	reader := bytes.NewReader(payload)
+	var err error
+
+	err = binary.Read(reader, binary.BigEndian, &m.Index)
+	if err != nil {
+		return err
+	}
+
+	err = binary.Read(reader, binary.BigEndian, &m.Duration)
+	if err != nil {
+		return err
+	}
+
+	_, err = io.CopyN(io.Discard, reader, 2)
+	if err != nil {
+		return err
+	}
+
+	err = binary.Read(reader, binary.BigEndian, &m.CheckSeq)
+	if err != nil {
+		return err
+	}
+
+	err = binary.Read(reader, binary.BigEndian, &m.Round)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type EnemyDuelBattleStatusEntryData struct {
@@ -300,8 +372,10 @@ type EnemyDuelBattleStatusEntryData struct {
 
 func (t *EnemyDuelBattleStatusEntryData) MarshalBinary() ([]byte, error) {
 	var buf bytes.Buffer
+	var err error
 
-	if err := binary.Write(&buf, binary.BigEndian, t.Seed); err != nil {
+	err = binary.Write(&buf, binary.BigEndian, t.Seed)
+	if err != nil {
 		return nil, err
 	}
 
@@ -336,24 +410,30 @@ type EnemyDuelBattleStatusBetItem struct {
 
 func (t *EnemyDuelBattleStatusBetItem) MarshalBinary() ([]byte, error) {
 	var buf bytes.Buffer
+	var err error
 
-	if err := writePrefixedString(&buf, t.PlayerID); err != nil {
+	err = writePrefixedString(&buf, t.PlayerID)
+	if err != nil {
 		return nil, err
 	}
 
-	if err := binary.Write(&buf, binary.BigEndian, t.Side); err != nil {
+	err = binary.Write(&buf, binary.BigEndian, t.Side)
+	if err != nil {
 		return nil, err
 	}
 
-	if err := binary.Write(&buf, binary.BigEndian, t.AllIn); err != nil {
+	err = binary.Write(&buf, binary.BigEndian, t.AllIn)
+	if err != nil {
 		return nil, err
 	}
 
-	if err := binary.Write(&buf, binary.BigEndian, t.Streak); err != nil {
+	err = binary.Write(&buf, binary.BigEndian, t.Streak)
+	if err != nil {
 		return nil, err
 	}
 
-	if err := binary.Write(&buf, binary.BigEndian, t.UpdateTs); err != nil {
+	err = binary.Write(&buf, binary.BigEndian, t.UpdateTs)
+	if err != nil {
 		return nil, err
 	}
 
@@ -373,36 +453,45 @@ type EnemyDuelBattleStatusRoundLeaderBoard struct {
 
 func (t *EnemyDuelBattleStatusRoundLeaderBoard) MarshalBinary() ([]byte, error) {
 	var buf bytes.Buffer
+	var err error
 
-	if err := writePrefixedString(&buf, t.PlayerID); err != nil {
+	err = writePrefixedString(&buf, t.PlayerID)
+	if err != nil {
 		return nil, err
 	}
 
-	if err := binary.Write(&buf, binary.BigEndian, t.OldMoney); err != nil {
+	err = binary.Write(&buf, binary.BigEndian, t.OldMoney)
+	if err != nil {
 		return nil, err
 	}
 
-	if err := binary.Write(&buf, binary.BigEndian, t.NewMoney); err != nil {
+	err = binary.Write(&buf, binary.BigEndian, t.NewMoney)
+	if err != nil {
 		return nil, err
 	}
 
-	if err := binary.Write(&buf, binary.BigEndian, t.MaxRound); err != nil {
+	err = binary.Write(&buf, binary.BigEndian, t.MaxRound)
+	if err != nil {
 		return nil, err
 	}
 
-	if err := binary.Write(&buf, binary.BigEndian, t.Streak); err != nil {
+	err = binary.Write(&buf, binary.BigEndian, t.Streak)
+	if err != nil {
 		return nil, err
 	}
 
-	if err := binary.Write(&buf, binary.BigEndian, t.Result); err != nil {
+	err = binary.Write(&buf, binary.BigEndian, t.Result)
+	if err != nil {
 		return nil, err
 	}
 
-	if err := binary.Write(&buf, binary.BigEndian, t.Bet); err != nil {
+	err = binary.Write(&buf, binary.BigEndian, t.Bet)
+	if err != nil {
 		return nil, err
 	}
 
-	if err := binary.Write(&buf, binary.BigEndian, t.ShieldState); err != nil {
+	err = binary.Write(&buf, binary.BigEndian, t.ShieldState)
+	if err != nil {
 		return nil, err
 	}
 
@@ -424,16 +513,20 @@ func (m *S2CEnemyDuelClientStateMessage) ContentType() uint32 {
 
 func (m *S2CEnemyDuelClientStateMessage) Marshal() ([]byte, error) {
 	var buf bytes.Buffer
+	var err error
 
-	if err := binary.Write(&buf, binary.BigEndian, m.State); err != nil {
+	err = binary.Write(&buf, binary.BigEndian, m.State)
+	if err != nil {
 		return nil, err
 	}
 
-	if err := binary.Write(&buf, binary.BigEndian, m.Round); err != nil {
+	err = binary.Write(&buf, binary.BigEndian, m.Round)
+	if err != nil {
 		return nil, err
 	}
 
-	if err := binary.Write(&buf, binary.BigEndian, m.ForceEndTs); err != nil {
+	err = binary.Write(&buf, binary.BigEndian, m.ForceEndTs)
+	if err != nil {
 		return nil, err
 	}
 
@@ -481,24 +574,30 @@ type EnemyDuelServicePlayer struct {
 
 func (t *EnemyDuelServicePlayer) MarshalBinary() ([]byte, error) {
 	var buf bytes.Buffer
+	var err error
 
-	if err := writePrefixedString(&buf, t.PlayerID); err != nil {
+	err = writePrefixedString(&buf, t.PlayerID)
+	if err != nil {
 		return nil, err
 	}
 
-	if err := writePrefixedString(&buf, t.AvatarID); err != nil {
+	err = writePrefixedString(&buf, t.AvatarID)
+	if err != nil {
 		return nil, err
 	}
 
-	if err := writePrefixedString(&buf, t.NickName); err != nil {
+	err = writePrefixedString(&buf, t.NickName)
+	if err != nil {
 		return nil, err
 	}
 
-	if err := writePrefixedString(&buf, t.AvatarType); err != nil {
+	err = writePrefixedString(&buf, t.AvatarType)
+	if err != nil {
 		return nil, err
 	}
 
-	if err := binary.Write(&buf, binary.BigEndian, t.HaveShield); err != nil {
+	err = binary.Write(&buf, binary.BigEndian, t.HaveShield)
+	if err != nil {
 		return nil, err
 	}
 
@@ -521,28 +620,35 @@ func (m *S2CEnemyDuelJoinMessage) ContentType() uint32 {
 
 func (m *S2CEnemyDuelJoinMessage) Marshal() ([]byte, error) {
 	var buf bytes.Buffer
+	var err error
 
-	if err := binary.Write(&buf, binary.BigEndian, m.RetCode); err != nil {
+	err = binary.Write(&buf, binary.BigEndian, m.RetCode)
+	if err != nil {
 		return nil, err
 	}
 
-	if err := binary.Write(&buf, binary.BigEndian, m.NowTs); err != nil {
+	err = binary.Write(&buf, binary.BigEndian, m.NowTs)
+	if err != nil {
 		return nil, err
 	}
 
-	if err := binary.Write(&buf, binary.BigEndian, m.SceneCreateTs); err != nil {
+	err = binary.Write(&buf, binary.BigEndian, m.SceneCreateTs)
+	if err != nil {
 		return nil, err
 	}
 
-	if err := writePrefixedString(&buf, m.NewToken); err != nil {
+	err = writePrefixedString(&buf, m.NewToken)
+	if err != nil {
 		return nil, err
 	}
 
-	if err := writePrefixedString(&buf, m.StageID); err != nil {
+	err = writePrefixedString(&buf, m.StageID)
+	if err != nil {
 		return nil, err
 	}
 
-	if err := binary.Write(&buf, binary.BigEndian, m.StageSeed); err != nil {
+	err = binary.Write(&buf, binary.BigEndian, m.StageSeed)
+	if err != nil {
 		return nil, err
 	}
 
@@ -555,7 +661,8 @@ func (m *S2CEnemyDuelJoinMessage) Marshal() ([]byte, error) {
 		return nil, err
 	}
 
-	if _, err := buf.Write([]byte{0, 0}); err != nil {
+	_, err = buf.Write([]byte{0, 0})
+	if err != nil {
 		return nil, err
 	}
 
