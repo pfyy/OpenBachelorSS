@@ -100,6 +100,7 @@ func main() {
 					if *verbose {
 						log.Printf("envelop mismatch: \ngot: %#v\nwant: %#v", newEnv.Payload, e.Payload)
 					}
+					return
 				}
 
 				parsedAndVerifiedMsgCnt++
