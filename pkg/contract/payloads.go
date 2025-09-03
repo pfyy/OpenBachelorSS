@@ -578,7 +578,20 @@ func (m *C2SEnemyDuelEmojiMessage) ContentType() uint32 {
 }
 
 func (m *C2SEnemyDuelEmojiMessage) Marshal() ([]byte, error) {
-	panic("TODO")
+	var buf bytes.Buffer
+	var err error
+
+	err = writePrefixedString(&buf, m.EmojiGroup)
+	if err != nil {
+		return nil, err
+	}
+
+	err = writePrefixedString(&buf, m.EmojiID)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
 }
 
 func (m *C2SEnemyDuelEmojiMessage) Unmarshal(payload []byte) error {
@@ -606,7 +619,7 @@ func (m *C2SEnemyDuelReadyMessage) ContentType() uint32 {
 }
 
 func (m *C2SEnemyDuelReadyMessage) Marshal() ([]byte, error) {
-	panic("TODO")
+	return nil, nil
 }
 
 func (m *C2SEnemyDuelReadyMessage) Unmarshal(payload []byte) error {
@@ -624,7 +637,25 @@ func (m *C2SEnemyDuelJoinMessage) ContentType() uint32 {
 }
 
 func (m *C2SEnemyDuelJoinMessage) Marshal() ([]byte, error) {
-	panic("TODO")
+	var buf bytes.Buffer
+	var err error
+
+	err = writePrefixedString(&buf, m.PlayerID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = writePrefixedString(&buf, m.SceneID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = writePrefixedString(&buf, m.Token)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
 }
 
 func (m *C2SEnemyDuelJoinMessage) Unmarshal(payload []byte) error {
@@ -661,7 +692,25 @@ func (m *C2SEnemyDuelRoundSettleMessage) ContentType() uint32 {
 }
 
 func (m *C2SEnemyDuelRoundSettleMessage) Marshal() ([]byte, error) {
-	panic("TODO")
+	var buf bytes.Buffer
+	var err error
+
+	err = binary.Write(&buf, binary.BigEndian, m.Side)
+	if err != nil {
+		return nil, err
+	}
+
+	err = writePrefixedString(&buf, m.Info)
+	if err != nil {
+		return nil, err
+	}
+
+	err = writePrefixedString(&buf, m.InfoHash)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
 }
 
 func (m *C2SEnemyDuelRoundSettleMessage) Unmarshal(payload []byte) error {
@@ -699,7 +748,30 @@ func (m *C2SEnemyDuelBetMessage) ContentType() uint32 {
 }
 
 func (m *C2SEnemyDuelBetMessage) Marshal() ([]byte, error) {
-	panic("TODO")
+	var buf bytes.Buffer
+	var err error
+
+	err = writePrefixedString(&buf, m.PlayerID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = binary.Write(&buf, binary.BigEndian, m.Side)
+	if err != nil {
+		return nil, err
+	}
+
+	err = binary.Write(&buf, binary.BigEndian, m.IsPlayer)
+	if err != nil {
+		return nil, err
+	}
+
+	err = binary.Write(&buf, binary.BigEndian, m.AllIn)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
 }
 
 func (m *C2SEnemyDuelBetMessage) Unmarshal(payload []byte) error {
@@ -739,7 +811,15 @@ func (m *C2SEnemyDuelHistoryMessage) ContentType() uint32 {
 }
 
 func (m *C2SEnemyDuelHistoryMessage) Marshal() ([]byte, error) {
-	panic("TODO")
+	var buf bytes.Buffer
+	var err error
+
+	err = binary.Write(&buf, binary.BigEndian, m.Seq)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
 }
 
 func (m *C2SEnemyDuelHistoryMessage) Unmarshal(payload []byte) error {
@@ -762,7 +842,7 @@ func (m *C2SEnemyDuelQuitMessage) ContentType() uint32 {
 }
 
 func (m *C2SEnemyDuelQuitMessage) Marshal() ([]byte, error) {
-	panic("TODO")
+	return nil, nil
 }
 
 func (m *C2SEnemyDuelQuitMessage) Unmarshal(payload []byte) error {
@@ -779,7 +859,20 @@ func (m *C2SEnemyDuelHeartBeatMessage) ContentType() uint32 {
 }
 
 func (m *C2SEnemyDuelHeartBeatMessage) Marshal() ([]byte, error) {
-	panic("TODO")
+	var buf bytes.Buffer
+	var err error
+
+	err = binary.Write(&buf, binary.BigEndian, m.Seq)
+	if err != nil {
+		return nil, err
+	}
+
+	err = binary.Write(&buf, binary.BigEndian, m.Time)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
 }
 
 func (m *C2SEnemyDuelHeartBeatMessage) Unmarshal(payload []byte) error {
