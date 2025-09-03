@@ -20,6 +20,7 @@ func init() {
 	RegisterMessage(S2CEnemyDuelClientStateMessageType, func() Content { return &S2CEnemyDuelClientStateMessage{} })
 	RegisterMessage(S2CEnemyDuelJoinMessageType, func() Content { return &S2CEnemyDuelJoinMessage{} })
 	RegisterMessage(S2CEnemyDuelEndMessageType, func() Content { return &S2CEnemyDuelEndMessage{} })
+	RegisterMessage(S2CEnemyDuelHistoryMessageType, func() Content { return &S2CEnemyDuelHistoryMessage{} })
 
 	RegisterMessage(C2SEnemyDuelEmojiMessageType, func() Content { return &C2SEnemyDuelEmojiMessage{} })
 	RegisterMessage(C2SEnemyDuelReadyMessageType, func() Content { return &C2SEnemyDuelReadyMessage{} })
@@ -944,6 +945,112 @@ func (m *S2CEnemyDuelEndMessage) Unmarshal(payload []byte) error {
 	var err error
 
 	err = binary.Read(reader, binary.BigEndian, &m.Reason)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type EnemyDuelServiceStepData struct {
+	Index    uint32
+	Duration uint32
+	CheckSeq int32
+	Round    uint8
+}
+
+func (t *EnemyDuelServiceStepData) MarshalBinary() ([]byte, error) {
+	var buf bytes.Buffer
+	var err error
+
+	err = binary.Write(&buf, binary.BigEndian, t.Index)
+	if err != nil {
+		return nil, err
+	}
+
+	err = binary.Write(&buf, binary.BigEndian, t.Duration)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = buf.Write([]byte{0, 0})
+	if err != nil {
+		return nil, err
+	}
+
+	err = binary.Write(&buf, binary.BigEndian, t.CheckSeq)
+	if err != nil {
+		return nil, err
+	}
+
+	err = binary.Write(&buf, binary.BigEndian, t.Round)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
+func (t *EnemyDuelServiceStepData) UnmarshalBinaryReader(r io.Reader) error {
+	var err error
+
+	err = binary.Read(r, binary.BigEndian, &t.Index)
+	if err != nil {
+		return err
+	}
+
+	err = binary.Read(r, binary.BigEndian, &t.Duration)
+	if err != nil {
+		return err
+	}
+
+	_, err = io.CopyN(io.Discard, r, 2)
+	if err != nil {
+		return err
+	}
+
+	err = binary.Read(r, binary.BigEndian, &t.CheckSeq)
+	if err != nil {
+		return err
+	}
+
+	err = binary.Read(r, binary.BigEndian, &t.Round)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type S2CEnemyDuelHistoryMessage struct {
+	Steps []*EnemyDuelServiceStepData
+}
+
+func (m *S2CEnemyDuelHistoryMessage) ContentType() uint32 {
+	return S2CEnemyDuelHistoryMessageType
+}
+
+func (m *S2CEnemyDuelHistoryMessage) Marshal() ([]byte, error) {
+	var buf bytes.Buffer
+	var err error
+
+	steps, err := SerializeSlice(m.Steps)
+	if err != nil {
+		return nil, err
+	}
+	_, err = buf.Write(steps)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
+func (m *S2CEnemyDuelHistoryMessage) Unmarshal(payload []byte) error {
+	reader := bytes.NewReader(payload)
+	var err error
+
+	m.Steps, err = DeserializeSlice[EnemyDuelServiceStepData, *EnemyDuelServiceStepData](reader)
 	if err != nil {
 		return err
 	}
