@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"io"
 	"log"
@@ -46,6 +47,7 @@ func main() {
 	msgCnt := 0
 	msgTypeMap := make(map[uint32]int)
 	parsedMsgCnt := 0
+	parsedAndVerifiedMsgCnt := 0
 	for {
 		receivedEnv, err := protocol.ReadEnvelop(serverConn)
 		if err == io.EOF {
@@ -75,6 +77,34 @@ func main() {
 
 			parsedMsgCnt++
 			log.Printf("msg: %#v", content)
+
+			func(c contract.Content, e *protocol.Envelop) {
+				defer func() {
+					if r := recover(); r != nil {
+						if *verbose {
+							log.Printf("panic while getting envelop of %+v: %v", c, err)
+						}
+					}
+				}()
+
+				newEnv, err := contract.ToEnvelop(c)
+
+				if err != nil {
+					if *verbose {
+						log.Printf("failed to get envelop of %+v: %v", env, err)
+					}
+					return
+				}
+
+				if !bytes.Equal(e.Payload, newEnv.Payload) {
+					if *verbose {
+						log.Printf("envelop mismatch: \ngot: %#v\nwant: %#v", newEnv.Payload, e.Payload)
+					}
+				}
+
+				parsedAndVerifiedMsgCnt++
+			}(content, env)
+
 		}(receivedEnv)
 
 		msgCnt++
@@ -85,5 +115,6 @@ func main() {
 
 	log.Printf("num of msg: %d", msgCnt)
 	log.Printf("num of parsed msg: %d", parsedMsgCnt)
+	log.Printf("num of parsed & verified msg: %d", parsedAndVerifiedMsgCnt)
 	log.Printf("msg type: %v", msgTypeMap)
 }
