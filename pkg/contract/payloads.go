@@ -596,7 +596,6 @@ func (m *C2SEnemyDuelEmojiMessage) Marshal() ([]byte, error) {
 
 func (m *C2SEnemyDuelEmojiMessage) Unmarshal(payload []byte) error {
 	reader := bytes.NewReader(payload)
-
 	var err error
 
 	m.EmojiGroup, err = readPrefixedString(reader)
@@ -660,7 +659,6 @@ func (m *C2SEnemyDuelJoinMessage) Marshal() ([]byte, error) {
 
 func (m *C2SEnemyDuelJoinMessage) Unmarshal(payload []byte) error {
 	reader := bytes.NewReader(payload)
-
 	var err error
 
 	m.PlayerID, err = readPrefixedString(reader)
