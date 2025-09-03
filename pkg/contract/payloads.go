@@ -202,6 +202,22 @@ func DeserializeSlice[T any, PT interface {
 	return items, nil
 }
 
+func DeserializePrimitiveSlice[T FixedSize](r io.Reader) ([]T, error) {
+	var length uint16
+	if err := binary.Read(r, binary.BigEndian, &length); err != nil {
+		return nil, err
+	}
+
+	items := make([]T, length)
+
+	if err := binary.Read(r, binary.BigEndian, items); err != nil {
+		return nil, err
+	}
+
+	return items, nil
+
+}
+
 // ------------------------------
 
 type S2CEnemyDuelEmojiMessage struct {
@@ -428,6 +444,27 @@ func (t *EnemyDuelBattleStatusEntryData) MarshalBinary() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+func (t *EnemyDuelBattleStatusEntryData) UnmarshalBinaryReader(r io.Reader) error {
+	var err error
+
+	err = binary.Read(r, binary.BigEndian, &t.Seed)
+	if err != nil {
+		return err
+	}
+
+	t.SeedHistory, err = DeserializePrimitiveSlice[uint32](r)
+	if err != nil {
+		return err
+	}
+
+	t.SideHistory, err = DeserializePrimitiveSlice[uint8](r)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 type EnemyDuelBattleStatusBetItem struct {
 	PlayerID string
 	Side     uint8
@@ -466,6 +503,37 @@ func (t *EnemyDuelBattleStatusBetItem) MarshalBinary() ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+func (t *EnemyDuelBattleStatusBetItem) UnmarshalBinaryReader(r io.Reader) error {
+	var err error
+
+	t.PlayerID, err = readPrefixedString(r)
+	if err != nil {
+		return err
+	}
+
+	err = binary.Read(r, binary.BigEndian, &t.Side)
+	if err != nil {
+		return err
+	}
+
+	err = binary.Read(r, binary.BigEndian, &t.AllIn)
+	if err != nil {
+		return err
+	}
+
+	err = binary.Read(r, binary.BigEndian, &t.Streak)
+	if err != nil {
+		return err
+	}
+
+	err = binary.Read(r, binary.BigEndian, &t.UpdateTs)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type EnemyDuelBattleStatusRoundLeaderBoard struct {
@@ -524,6 +592,52 @@ func (t *EnemyDuelBattleStatusRoundLeaderBoard) MarshalBinary() ([]byte, error) 
 	}
 
 	return buf.Bytes(), nil
+}
+
+func (t *EnemyDuelBattleStatusRoundLeaderBoard) UnmarshalBinaryReader(r io.Reader) error {
+	var err error
+
+	t.PlayerID, err = readPrefixedString(r)
+	if err != nil {
+		return err
+	}
+
+	err = binary.Read(r, binary.BigEndian, &t.OldMoney)
+	if err != nil {
+		return err
+	}
+
+	err = binary.Read(r, binary.BigEndian, &t.NewMoney)
+	if err != nil {
+		return err
+	}
+
+	err = binary.Read(r, binary.BigEndian, &t.MaxRound)
+	if err != nil {
+		return err
+	}
+
+	err = binary.Read(r, binary.BigEndian, &t.Streak)
+	if err != nil {
+		return err
+	}
+
+	err = binary.Read(r, binary.BigEndian, &t.Result)
+	if err != nil {
+		return err
+	}
+
+	err = binary.Read(r, binary.BigEndian, &t.Bet)
+	if err != nil {
+		return err
+	}
+
+	err = binary.Read(r, binary.BigEndian, &t.ShieldState)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type S2CEnemyDuelClientStateMessage struct {
@@ -589,7 +703,40 @@ func (m *S2CEnemyDuelClientStateMessage) Marshal() ([]byte, error) {
 }
 
 func (m *S2CEnemyDuelClientStateMessage) Unmarshal(payload []byte) error {
-	panic("TODO")
+	reader := bytes.NewReader(payload)
+	var err error
+
+	err = binary.Read(reader, binary.BigEndian, &m.State)
+	if err != nil {
+		return err
+	}
+
+	err = binary.Read(reader, binary.BigEndian, &m.Round)
+	if err != nil {
+		return err
+	}
+
+	err = binary.Read(reader, binary.BigEndian, &m.ForceEndTs)
+	if err != nil {
+		return err
+	}
+
+	m.SrcEntryData, err = DeserializeSlice[EnemyDuelBattleStatusEntryData, *EnemyDuelBattleStatusEntryData](reader)
+	if err != nil {
+		return err
+	}
+
+	m.BetList, err = DeserializeSlice[EnemyDuelBattleStatusBetItem, *EnemyDuelBattleStatusBetItem](reader)
+	if err != nil {
+		return err
+	}
+
+	m.LeaderBoard, err = DeserializeSlice[EnemyDuelBattleStatusRoundLeaderBoard, *EnemyDuelBattleStatusRoundLeaderBoard](reader)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type EnemyDuelServicePlayer struct {
