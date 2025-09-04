@@ -14,6 +14,47 @@ import (
 	"github.com/davecgh/go-spew/spew"
 )
 
+func processEnv(env *protocol.Envelop, verbose bool, parsedMsgCnt *int, parsedAndVerifiedMsgCnt *int) {
+	defer func() {
+		if r := recover(); r != nil {
+			if verbose {
+				log.Printf("panic while processing env %+v: %v", env, r)
+			}
+		}
+	}()
+
+	content, err := contract.FromEnvelop(env)
+	if err != nil {
+		if verbose {
+			log.Printf("failed to get content of %+v: %v", env, err)
+		}
+		return
+	}
+
+	*parsedMsgCnt++
+
+	spew.Dump(content)
+
+	newEnv, err := contract.ToEnvelop(content)
+
+	if err != nil {
+		if verbose {
+			log.Printf("failed to get envelop of %+v: %v", content, err)
+		}
+		return
+	}
+
+	if !bytes.Equal(env.Payload, newEnv.Payload) {
+		if verbose {
+			log.Printf("envelop mismatch: \ngot: %#v\nwant: %#v", newEnv.Payload, env.Payload)
+		}
+		return
+	}
+
+	*parsedAndVerifiedMsgCnt++
+
+}
+
 func main() {
 	verbose := flag.Bool("verbose", false, "print err")
 	flag.Parse()
@@ -59,58 +100,10 @@ func main() {
 			break
 		}
 
-		func(env *protocol.Envelop) {
-			defer func() {
-				if r := recover(); r != nil {
-					if *verbose {
-						log.Printf("panic while getting content of %+v: %v", env, r)
-					}
-				}
-			}()
-
-			content, err := contract.FromEnvelop(env)
-			if err != nil {
-				if *verbose {
-					log.Printf("failed to get content of %+v: %v", env, err)
-				}
-				return
-			}
-
-			parsedMsgCnt++
-			spew.Dump(content)
-
-			func(c contract.Content, e *protocol.Envelop) {
-				defer func() {
-					if r := recover(); r != nil {
-						if *verbose {
-							log.Printf("panic while getting envelop of %+v: %v", c, r)
-						}
-					}
-				}()
-
-				newEnv, err := contract.ToEnvelop(c)
-
-				if err != nil {
-					if *verbose {
-						log.Printf("failed to get envelop of %+v: %v", c, err)
-					}
-					return
-				}
-
-				if !bytes.Equal(e.Payload, newEnv.Payload) {
-					if *verbose {
-						log.Printf("envelop mismatch: \ngot: %#v\nwant: %#v", newEnv.Payload, e.Payload)
-					}
-					return
-				}
-
-				parsedAndVerifiedMsgCnt++
-			}(content, env)
-
-		}(receivedEnv)
-
 		msgCnt++
 		msgTypeMap[receivedEnv.Type]++
+
+		processEnv(receivedEnv, *verbose, &parsedMsgCnt, &parsedAndVerifiedMsgCnt)
 	}
 
 	wg.Wait()
