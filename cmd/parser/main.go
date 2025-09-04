@@ -63,7 +63,7 @@ func main() {
 			defer func() {
 				if r := recover(); r != nil {
 					if *verbose {
-						log.Printf("panic while getting content of %+v: %v", env, err)
+						log.Printf("panic while getting content of %+v: %v", env, r)
 					}
 				}
 			}()
@@ -83,7 +83,7 @@ func main() {
 				defer func() {
 					if r := recover(); r != nil {
 						if *verbose {
-							log.Printf("panic while getting envelop of %+v: %v", c, err)
+							log.Printf("panic while getting envelop of %+v: %v", c, r)
 						}
 					}
 				}()
@@ -92,7 +92,7 @@ func main() {
 
 				if err != nil {
 					if *verbose {
-						log.Printf("failed to get envelop of %+v: %v", env, err)
+						log.Printf("failed to get envelop of %+v: %v", c, err)
 					}
 					return
 				}
