@@ -47,7 +47,7 @@ func (m *UnknownMessage) Marshal() ([]byte, error) {
 }
 
 func (m *UnknownMessage) Unmarshal(payload []byte) error {
-	m.Envelop.Payload = slices.Clone(m.Envelop.Payload)
+	m.Envelop.Payload = slices.Clone(payload)
 	return nil
 }
 
