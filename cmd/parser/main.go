@@ -31,6 +31,13 @@ func processEnv(env *protocol.Envelop, verbose bool, parsedMsgCnt *int, parsedAn
 		return
 	}
 
+	if _, ok := content.(*contract.UnknownMessage); ok {
+		if verbose {
+			log.Printf("unknown env %+v: %v", env, err)
+		}
+		return
+	}
+
 	*parsedMsgCnt++
 
 	spew.Dump(content)

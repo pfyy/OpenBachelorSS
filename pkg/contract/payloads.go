@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"slices"
 
 	"github.com/OpenBachelor/OpenBachelorSS/pkg/protocol"
 )
@@ -33,6 +34,32 @@ func init() {
 	RegisterMessage(C2SEnemyDuelFinalSettleMessageType, func() Content { return &C2SEnemyDuelFinalSettleMessage{} })
 }
 
+type UnknownMessage struct {
+	Envelop protocol.Envelop
+}
+
+func (m *UnknownMessage) ContentType() uint32 {
+	return m.Envelop.Type
+}
+
+func (m *UnknownMessage) Marshal() ([]byte, error) {
+	return slices.Clone(m.Envelop.Payload), nil
+}
+
+func (m *UnknownMessage) Unmarshal(payload []byte) error {
+	m.Envelop.Payload = slices.Clone(m.Envelop.Payload)
+	return nil
+}
+
+func NewUnknownMessage(env *protocol.Envelop) *UnknownMessage {
+	return &UnknownMessage{
+		Envelop: protocol.Envelop{
+			Type:    env.Type,
+			Payload: slices.Clone(env.Payload),
+		},
+	}
+}
+
 func RegisterMessage(msgType uint32, constructor func() Content) {
 	if _, exists := messageRegistry[msgType]; exists {
 		panic(fmt.Sprintf("message type %d is already registered", msgType))
@@ -44,7 +71,7 @@ func FromEnvelop(env *protocol.Envelop) (Content, error) {
 	constructor, ok := messageRegistry[env.Type]
 
 	if !ok {
-		return nil, fmt.Errorf("unknown envelop")
+		return NewUnknownMessage(env), nil
 	}
 
 	c := constructor()
