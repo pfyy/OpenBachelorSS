@@ -51,7 +51,9 @@ func (s *Session) readLoop() {
 		}
 
 		if err != nil {
-			s.readErr = err
+			if s.ctx.Err() == nil {
+				s.readErr = err
+			}
 			return
 		}
 
@@ -131,9 +133,10 @@ func (s *Session) Start() {
 }
 
 func (s *Session) Close() {
+	s.cancel()
+
 	s.conn.CloseRead()
 
-	s.cancel()
 	s.wg.Wait()
 
 	s.conn.Close()
