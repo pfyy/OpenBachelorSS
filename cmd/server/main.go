@@ -8,13 +8,19 @@ import (
 	"github.com/OpenBachelor/OpenBachelorSS/internal/session"
 )
 
-func handleConnection(ctx context.Context, conn session.Conn) {
+func handleConnection(ctx context.Context, conn net.Conn) {
 	defer conn.Close()
 
-	log.Printf("conn: %+v", conn)
+	tcpConn, ok := conn.(*net.TCPConn)
+	if !ok {
+		log.Printf("unsupported connection type: %T", conn)
+		return
+	}
 
-	session := session.NewSession(ctx, conn)
-	defer session.Close()
+	log.Printf("conn: %+v", tcpConn)
+
+	s := session.NewSession(ctx, tcpConn)
+	defer s.Close()
 }
 
 func main() {
@@ -28,16 +34,10 @@ func main() {
 	defer listener.Close()
 
 	for {
-		netConn, err := listener.Accept()
+		conn, err := listener.Accept()
 
 		if err != nil {
 			log.Printf("failed to accept: %v", err)
-			continue
-		}
-
-		conn, ok := netConn.(*net.TCPConn)
-		if !ok {
-			log.Printf("not a valid conn type: %T", netConn)
 			continue
 		}
 
