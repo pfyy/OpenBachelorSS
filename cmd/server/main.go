@@ -14,7 +14,6 @@ import (
 )
 
 func handleConnection(ctx context.Context, conn net.Conn) {
-	defer conn.Close()
 
 	tcpConn, ok := conn.(*net.TCPConn)
 	if !ok {
@@ -22,7 +21,7 @@ func handleConnection(ctx context.Context, conn net.Conn) {
 		return
 	}
 
-	log.Printf("conn: %+v", tcpConn)
+	log.Printf("conn: %+v", tcpConn.RemoteAddr())
 
 	s := session.NewSession(ctx, tcpConn)
 	defer s.Close()
