@@ -15,7 +15,7 @@ type Envelop struct {
 	Payload []byte
 }
 
-const maxPayloadSize = 1 << 10 << 10
+const maxPayloadSize = 1 << 20
 
 func WriteEnvelop(w io.Writer, env *Envelop) error {
 	if len(env.Payload) > 0xffffffff {
