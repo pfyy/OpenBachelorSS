@@ -128,7 +128,7 @@ func readPrefixedString(r io.Reader, maxStrSize uint16) (string, error) {
 	}
 
 	if length > maxStrSize {
-		return "", fmt.Errorf("string too long")
+		return "", fmt.Errorf("string too long (%d)", length)
 	}
 
 	stringBytes := make([]byte, length)
@@ -226,7 +226,7 @@ func DeserializeSlice[T any, PT interface {
 	}
 
 	if length > maxSliceSize {
-		return nil, fmt.Errorf("slice too long")
+		return nil, fmt.Errorf("slice too long (%d)", length)
 	}
 
 	items := make([]PT, length)
@@ -251,7 +251,7 @@ func DeserializePrimitiveSlice[T FixedSize](r io.Reader, maxSliceSize uint16) ([
 	}
 
 	if length > maxSliceSize {
-		return nil, fmt.Errorf("slice too long")
+		return nil, fmt.Errorf("slice too long (%d)", length)
 	}
 
 	items := make([]T, length)

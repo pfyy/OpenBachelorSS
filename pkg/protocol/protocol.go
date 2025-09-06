@@ -47,7 +47,7 @@ func ReadEnvelop(r io.Reader) (*Envelop, error) {
 	msgType := binary.BigEndian.Uint32(header[4:8])
 
 	if length > maxPayloadSize {
-		return nil, fmt.Errorf("envelop too large")
+		return nil, fmt.Errorf("envelop too large (%d)", length)
 	}
 
 	var payload []byte
