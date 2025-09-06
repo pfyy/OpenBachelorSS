@@ -55,6 +55,6 @@ func main() {
 			continue
 		}
 
-		go handleConnection(context.Background(), conn)
+		go handleConnection(ctx, conn)
 	}
 }
