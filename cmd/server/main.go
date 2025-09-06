@@ -24,6 +24,7 @@ func handleConnection(ctx context.Context, conn net.Conn) {
 	log.Printf("conn: %+v", tcpConn.RemoteAddr())
 
 	s := session.NewSession(ctx, tcpConn)
+	s.Start()
 	defer s.Close()
 }
 
