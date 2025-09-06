@@ -35,7 +35,7 @@ func main() {
 			continue
 		}
 
-		conn, ok := netConn.(session.Conn)
+		conn, ok := netConn.(*net.TCPConn)
 		if !ok {
 			log.Printf("not a valid conn type: %T", netConn)
 			continue
