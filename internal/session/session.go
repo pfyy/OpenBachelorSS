@@ -90,10 +90,20 @@ func (s *Session) writeLoop() {
 			}
 
 		case <-s.ctx.Done():
-			for content := range s.send {
-				err := contract.WriteContent(s.conn, content)
-				if err != nil {
-					s.setErr(err)
+			for {
+				select {
+				case content, ok := <-s.send:
+					if !ok {
+						return
+					}
+
+					err := contract.WriteContent(s.conn, content)
+					if err != nil {
+						s.setErr(err)
+						return
+					}
+
+				default:
 					return
 				}
 			}
