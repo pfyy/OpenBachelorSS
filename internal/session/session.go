@@ -9,8 +9,13 @@ import (
 	"github.com/OpenBachelor/OpenBachelorSS/pkg/contract"
 )
 
+type Conn interface {
+	net.Conn
+	CloseRead() error
+}
+
 type Session struct {
-	conn    net.Conn
+	conn    Conn
 	wg      sync.WaitGroup
 	send    chan contract.Content
 	recv    chan contract.Content
@@ -20,7 +25,7 @@ type Session struct {
 	err     error
 }
 
-func NewSession(parentCtx context.Context, conn net.Conn) *Session {
+func NewSession(parentCtx context.Context, conn Conn) *Session {
 	ctx, cancel := context.WithCancel(parentCtx)
 
 	return &Session{
@@ -32,10 +37,16 @@ func NewSession(parentCtx context.Context, conn net.Conn) *Session {
 	}
 }
 
+func (s *Session) close() {
+	s.conn.CloseRead()
+
+	s.cancel()
+}
+
 func (s *Session) setErr(err error) {
 	s.errOnce.Do(func() {
 		s.err = err
-		s.cancel()
+		s.close()
 	})
 }
 
@@ -91,8 +102,8 @@ func (s *Session) Start() {
 }
 
 func (s *Session) Close() {
-	s.cancel()
-	s.wg.Wait()
+	s.close()
 
+	s.wg.Wait()
 	s.conn.Close()
 }
