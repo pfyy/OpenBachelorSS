@@ -14,7 +14,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 )
 
-func processEnv(env *protocol.Envelop, verbose bool, parsedMsgCnt *int, parsedAndVerifiedMsgCnt *int) {
+func processEnv(env *protocol.Envelope, verbose bool, parsedMsgCnt *int, parsedAndVerifiedMsgCnt *int) {
 	defer func() {
 		if r := recover(); r != nil {
 			if verbose {
@@ -23,7 +23,7 @@ func processEnv(env *protocol.Envelop, verbose bool, parsedMsgCnt *int, parsedAn
 		}
 	}()
 
-	content, err := contract.FromEnvelop(env)
+	content, err := contract.FromEnvelope(env)
 	if err != nil {
 		if verbose {
 			log.Printf("failed to get content of %+v: %v", env, err)
@@ -42,18 +42,18 @@ func processEnv(env *protocol.Envelop, verbose bool, parsedMsgCnt *int, parsedAn
 
 	spew.Dump(content)
 
-	newEnv, err := contract.ToEnvelop(content)
+	newEnv, err := contract.ToEnvelope(content)
 
 	if err != nil {
 		if verbose {
-			log.Printf("failed to get envelop of %+v: %v", content, err)
+			log.Printf("failed to get envelope of %+v: %v", content, err)
 		}
 		return
 	}
 
 	if !bytes.Equal(env.Payload, newEnv.Payload) {
 		if verbose {
-			log.Printf("envelop mismatch: \ngot: %#v\nwant: %#v", newEnv.Payload, env.Payload)
+			log.Printf("envelope mismatch: \ngot: %#v\nwant: %#v", newEnv.Payload, env.Payload)
 		}
 		return
 	}
@@ -98,12 +98,12 @@ func main() {
 	parsedMsgCnt := 0
 	parsedAndVerifiedMsgCnt := 0
 	for {
-		receivedEnv, err := protocol.ReadEnvelop(serverConn)
+		receivedEnv, err := protocol.ReadEnvelope(serverConn)
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			log.Printf("ReadEnvelop failed: %v", err)
+			log.Printf("ReadEnvelope failed: %v", err)
 			break
 		}
 

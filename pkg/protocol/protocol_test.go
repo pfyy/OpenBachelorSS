@@ -10,13 +10,13 @@ func cloneBytes(payload []byte) []byte {
 	return append([]byte(nil), payload...)
 }
 
-func TestReadWriteEnvelop(t *testing.T) {
+func TestReadWriteEnvelope(t *testing.T) {
 	serverConn, clientConn := net.Pipe()
 	defer serverConn.Close()
 
 	const testMsgType uint32 = 123
 	testPayload := []byte("some_payload")
-	expectedEnv := &Envelop{
+	expectedEnv := &Envelope{
 		Type:    testMsgType,
 		Payload: cloneBytes(testPayload),
 	}
@@ -26,28 +26,28 @@ func TestReadWriteEnvelop(t *testing.T) {
 	go func() {
 		defer clientConn.Close()
 
-		errChan <- WriteEnvelop(clientConn, &Envelop{Type: testMsgType, Payload: cloneBytes(testPayload)})
+		errChan <- WriteEnvelope(clientConn, &Envelope{Type: testMsgType, Payload: cloneBytes(testPayload)})
 	}()
 
-	receivedEnv, err := ReadEnvelop(serverConn)
+	receivedEnv, err := ReadEnvelope(serverConn)
 	if err != nil {
-		t.Fatalf("ReadEnvelop failed: %v", err)
+		t.Fatalf("ReadEnvelope failed: %v", err)
 	}
 
 	if err := <-errChan; err != nil {
-		t.Fatalf("WriteEnvelop failed: %v", err)
+		t.Fatalf("WriteEnvelope failed: %v", err)
 	}
 
 	if !reflect.DeepEqual(expectedEnv, receivedEnv) {
-		t.Errorf("envelop mismatch: \ngot: %+v\nwant: %+v", receivedEnv, expectedEnv)
+		t.Errorf("envelope mismatch: \ngot: %+v\nwant: %+v", receivedEnv, expectedEnv)
 	}
 }
 
-func TestReadEnvelopWithPacket(t *testing.T) {
+func TestReadEnvelopeWithPacket(t *testing.T) {
 	packet := []byte{0x0, 0x0, 0x0, 0xc, 0x0, 0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x14}
 	const testMsgType uint32 = 1
 	testPayload := []byte{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x14}
-	expectedEnv := &Envelop{
+	expectedEnv := &Envelope{
 		Type:    testMsgType,
 		Payload: cloneBytes(testPayload),
 	}
@@ -65,9 +65,9 @@ func TestReadEnvelopWithPacket(t *testing.T) {
 		errChan <- err
 	}()
 
-	receivedEnv, err := ReadEnvelop(serverConn)
+	receivedEnv, err := ReadEnvelope(serverConn)
 	if err != nil {
-		t.Fatalf("ReadEnvelop failed: %v", err)
+		t.Fatalf("ReadEnvelope failed: %v", err)
 	}
 
 	if err := <-errChan; err != nil {
@@ -75,6 +75,6 @@ func TestReadEnvelopWithPacket(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(expectedEnv, receivedEnv) {
-		t.Errorf("envelop mismatch: \ngot: %+v\nwant: %+v", receivedEnv, expectedEnv)
+		t.Errorf("envelope mismatch: \ngot: %+v\nwant: %+v", receivedEnv, expectedEnv)
 	}
 }

@@ -10,14 +10,14 @@ const (
 	headerSize = 8
 )
 
-type Envelop struct {
+type Envelope struct {
 	Type    uint32
 	Payload []byte
 }
 
 const maxPayloadSize = 1 << 20
 
-func WriteEnvelop(w io.Writer, env *Envelop) error {
+func WriteEnvelope(w io.Writer, env *Envelope) error {
 	if len(env.Payload) > 0xffffffff {
 		return fmt.Errorf("payload too large (%d bytes)", len(env.Payload))
 	}
@@ -40,7 +40,7 @@ func WriteEnvelop(w io.Writer, env *Envelop) error {
 	return nil
 }
 
-func ReadEnvelop(r io.Reader) (*Envelop, error) {
+func ReadEnvelope(r io.Reader) (*Envelope, error) {
 	header := make([]byte, headerSize)
 
 	if _, err := io.ReadFull(r, header); err != nil {
@@ -51,7 +51,7 @@ func ReadEnvelop(r io.Reader) (*Envelop, error) {
 	msgType := binary.BigEndian.Uint32(header[4:8])
 
 	if length > maxPayloadSize {
-		return nil, fmt.Errorf("envelop too large (%d)", length)
+		return nil, fmt.Errorf("envelope too large (%d)", length)
 	}
 
 	var payload []byte
@@ -62,7 +62,7 @@ func ReadEnvelop(r io.Reader) (*Envelop, error) {
 		}
 	}
 
-	return &Envelop{
+	return &Envelope{
 		Type:    msgType,
 		Payload: payload,
 	}, nil

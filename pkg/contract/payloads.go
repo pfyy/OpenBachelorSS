@@ -35,25 +35,25 @@ func init() {
 }
 
 type UnknownMessage struct {
-	Envelop protocol.Envelop
+	Envelope protocol.Envelope
 }
 
 func (m *UnknownMessage) ContentType() uint32 {
-	return m.Envelop.Type
+	return m.Envelope.Type
 }
 
 func (m *UnknownMessage) Marshal() ([]byte, error) {
-	return slices.Clone(m.Envelop.Payload), nil
+	return slices.Clone(m.Envelope.Payload), nil
 }
 
 func (m *UnknownMessage) Unmarshal(payload []byte) error {
-	m.Envelop.Payload = slices.Clone(payload)
+	m.Envelope.Payload = slices.Clone(payload)
 	return nil
 }
 
-func NewUnknownMessage(env *protocol.Envelop) *UnknownMessage {
+func NewUnknownMessage(env *protocol.Envelope) *UnknownMessage {
 	return &UnknownMessage{
-		Envelop: protocol.Envelop{
+		Envelope: protocol.Envelope{
 			Type:    env.Type,
 			Payload: slices.Clone(env.Payload),
 		},
@@ -67,7 +67,7 @@ func RegisterMessage(msgType uint32, constructor func() Content) {
 	messageRegistry[msgType] = constructor
 }
 
-func FromEnvelop(env *protocol.Envelop) (Content, error) {
+func FromEnvelope(env *protocol.Envelope) (Content, error) {
 	constructor, ok := messageRegistry[env.Type]
 
 	if !ok {
@@ -84,23 +84,23 @@ func FromEnvelop(env *protocol.Envelop) (Content, error) {
 	return c, nil
 }
 
-func ToEnvelop(c Content) (*protocol.Envelop, error) {
+func ToEnvelope(c Content) (*protocol.Envelope, error) {
 	payload, err := c.Marshal()
 	if err != nil {
 		return nil, err
 	}
-	return &protocol.Envelop{
+	return &protocol.Envelope{
 		Type:    c.ContentType(),
 		Payload: payload,
 	}, nil
 }
 
 func WriteContent(w io.Writer, c Content) error {
-	env, err := ToEnvelop(c)
+	env, err := ToEnvelope(c)
 	if err != nil {
 		return err
 	}
-	err = protocol.WriteEnvelop(w, env)
+	err = protocol.WriteEnvelope(w, env)
 	if err != nil {
 		return err
 	}
@@ -108,11 +108,11 @@ func WriteContent(w io.Writer, c Content) error {
 }
 
 func ReadContent(r io.Reader) (Content, error) {
-	env, err := protocol.ReadEnvelop(r)
+	env, err := protocol.ReadEnvelope(r)
 	if err != nil {
 		return nil, err
 	}
-	c, err := FromEnvelop(env)
+	c, err := FromEnvelope(env)
 	if err != nil {
 		return nil, err
 	}
