@@ -22,6 +22,7 @@ type Session struct {
 	recv     chan contract.Content
 	ctx      context.Context
 	cancel   context.CancelFunc
+	errMu    sync.Mutex
 	readErr  error
 	writeErr error
 }
@@ -40,6 +41,12 @@ func NewSession(parentCtx context.Context, conn Conn) *Session {
 	}
 }
 
+func (s *Session) setReadErr(err error) {
+	s.errMu.Lock()
+	defer s.errMu.Unlock()
+	s.readErr = err
+}
+
 func (s *Session) readLoop() {
 	defer s.wg.Done()
 	defer close(s.recv)
@@ -52,7 +59,7 @@ func (s *Session) readLoop() {
 
 		if err != nil {
 			if s.ctx.Err() == nil {
-				s.readErr = err
+				s.setReadErr(err)
 			}
 			return
 		}
@@ -67,6 +74,12 @@ func (s *Session) readLoop() {
 
 const writeTimeout = 10 * time.Second
 
+func (s *Session) setWriteErr(err error) {
+	s.errMu.Lock()
+	defer s.errMu.Unlock()
+	s.writeErr = err
+}
+
 func (s *Session) writeContent(content contract.Content, ok bool) bool {
 	if !ok {
 		return true
@@ -74,13 +87,13 @@ func (s *Session) writeContent(content contract.Content, ok bool) bool {
 
 	err := s.conn.SetWriteDeadline(time.Now().Add(writeTimeout))
 	if err != nil {
-		s.writeErr = err
+		s.setWriteErr(err)
 		return true
 	}
 
 	err = contract.WriteContent(s.conn, content)
 	if err != nil {
-		s.writeErr = err
+		s.setWriteErr(err)
 		return true
 	}
 
@@ -111,6 +124,12 @@ func (s *Session) writeLoop() {
 			}
 		}
 	}
+}
+
+func (s *Session) Err() (error, error) {
+	s.errMu.Lock()
+	defer s.errMu.Unlock()
+	return s.readErr, s.writeErr
 }
 
 func (s *Session) Send() chan<- contract.Content {
