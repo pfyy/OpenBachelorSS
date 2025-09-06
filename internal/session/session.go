@@ -90,7 +90,13 @@ func (s *Session) writeLoop() {
 			}
 
 		case <-s.ctx.Done():
-			return
+			for content := range s.send {
+				err := contract.WriteContent(s.conn, content)
+				if err != nil {
+					s.setErr(err)
+					return
+				}
+			}
 		}
 	}
 }
