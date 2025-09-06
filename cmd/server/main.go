@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net"
 	"os/signal"
@@ -27,12 +28,12 @@ func handleConnection(ctx context.Context, conn net.Conn) {
 	defer s.Close()
 }
 
-func listen(ctx context.Context) {
+func mainLoop(ctx context.Context) error {
 	cfg := config.Get()
 
 	listener, err := net.Listen("tcp", cfg.Server.Addr)
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		return fmt.Errorf("failed to listen: %w", err)
 	}
 
 	go func() {
@@ -55,11 +56,17 @@ func listen(ctx context.Context) {
 
 		go handleConnection(ctx, conn)
 	}
+
+	return nil
 }
 
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	listen(ctx)
+	err := mainLoop(ctx)
+
+	if err != nil {
+		log.Fatalf("failed to start main loop: %v", err)
+	}
 }
