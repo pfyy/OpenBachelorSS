@@ -18,6 +18,10 @@ type Envelop struct {
 const maxPayloadSize = 1 << 10 << 10
 
 func WriteEnvelop(w io.Writer, env *Envelop) error {
+	if len(env.Payload) > 0xffffffff {
+		return fmt.Errorf("payload too large (%d bytes)", len(env.Payload))
+	}
+
 	header := make([]byte, headerSize)
 
 	binary.BigEndian.PutUint32(header[0:4], uint32(len(env.Payload)))
