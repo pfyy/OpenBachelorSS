@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/OpenBachelor/OpenBachelorSS/internal/config"
 	"github.com/OpenBachelor/OpenBachelorSS/internal/session"
 )
 
@@ -27,9 +28,9 @@ func handleConnection(ctx context.Context, conn net.Conn) {
 }
 
 func main() {
-	listenAddress := "127.0.0.1:8453"
+	cfg := config.Get()
 
-	listener, err := net.Listen("tcp", listenAddress)
+	listener, err := net.Listen("tcp", cfg.Server.Addr)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
