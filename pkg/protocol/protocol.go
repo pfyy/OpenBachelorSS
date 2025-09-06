@@ -2,6 +2,7 @@ package protocol
 
 import (
 	"encoding/binary"
+	"fmt"
 	"io"
 )
 
@@ -13,6 +14,8 @@ type Envelop struct {
 	Type    uint32
 	Payload []byte
 }
+
+const maxPayloadSize = 1 << 10 << 10
 
 func WriteEnvelop(w io.Writer, env *Envelop) error {
 	header := make([]byte, headerSize)
@@ -42,6 +45,10 @@ func ReadEnvelop(r io.Reader) (*Envelop, error) {
 
 	length := binary.BigEndian.Uint32(header[0:4])
 	msgType := binary.BigEndian.Uint32(header[4:8])
+
+	if length > maxPayloadSize {
+		return nil, fmt.Errorf("envelop too large")
+	}
 
 	var payload []byte
 	if length > 0 {
