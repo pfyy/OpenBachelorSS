@@ -2,8 +2,11 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net"
+	"os/signal"
+	"syscall"
 
 	"github.com/OpenBachelor/OpenBachelorSS/internal/session"
 )
@@ -31,10 +34,21 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	defer listener.Close()
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	go func() {
+		<-ctx.Done()
+		if err := listener.Close(); err != nil {
+			log.Printf("failed to close listener: %v", err)
+		}
+	}()
 
 	for {
 		conn, err := listener.Accept()
+		if errors.Is(err, net.ErrClosed) {
+			break
+		}
 
 		if err != nil {
 			log.Printf("failed to accept: %v", err)
