@@ -15,14 +15,14 @@ type Conn interface {
 }
 
 type Session struct {
-	conn    Conn
-	wg      sync.WaitGroup
-	send    chan contract.Content
-	recv    chan contract.Content
-	ctx     context.Context
-	cancel  context.CancelFunc
-	errOnce sync.Once
-	err     error
+	conn     Conn
+	wg       sync.WaitGroup
+	send     chan contract.Content
+	recv     chan contract.Content
+	ctx      context.Context
+	cancel   context.CancelFunc
+	readErr  error
+	writeErr error
 }
 
 const sessionChanSize = 1024
@@ -39,12 +39,6 @@ func NewSession(parentCtx context.Context, conn Conn) *Session {
 	}
 }
 
-func (s *Session) setErr(err error) {
-	s.errOnce.Do(func() {
-		s.err = err
-	})
-}
-
 func (s *Session) readLoop() {
 	defer s.wg.Done()
 	defer close(s.recv)
@@ -56,7 +50,7 @@ func (s *Session) readLoop() {
 		}
 
 		if err != nil {
-			s.setErr(err)
+			s.readErr = err
 			return
 		}
 
@@ -75,7 +69,7 @@ func (s *Session) writeContent(content contract.Content, ok bool) bool {
 
 	err := contract.WriteContent(s.conn, content)
 	if err != nil {
-		s.setErr(err)
+		s.writeErr = err
 		return true
 	}
 
