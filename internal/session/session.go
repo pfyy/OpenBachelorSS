@@ -37,16 +37,9 @@ func NewSession(parentCtx context.Context, conn Conn) *Session {
 	}
 }
 
-func (s *Session) close() {
-	s.conn.CloseRead()
-
-	s.cancel()
-}
-
 func (s *Session) setErr(err error) {
 	s.errOnce.Do(func() {
 		s.err = err
-		s.close()
 	})
 }
 
@@ -118,8 +111,10 @@ func (s *Session) Start() {
 }
 
 func (s *Session) Close() {
-	s.close()
+	s.conn.CloseRead()
 
+	s.cancel()
 	s.wg.Wait()
+
 	s.conn.Close()
 }
