@@ -27,16 +27,13 @@ func handleConnection(ctx context.Context, conn net.Conn) {
 	defer s.Close()
 }
 
-func main() {
+func listen(ctx context.Context) {
 	cfg := config.Get()
 
 	listener, err := net.Listen("tcp", cfg.Server.Addr)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer stop()
 
 	go func() {
 		<-ctx.Done()
@@ -58,4 +55,11 @@ func main() {
 
 		go handleConnection(ctx, conn)
 	}
+}
+
+func main() {
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	listen(ctx)
 }
