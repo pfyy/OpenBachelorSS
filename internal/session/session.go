@@ -25,13 +25,15 @@ type Session struct {
 	err     error
 }
 
+const sessionChanSize = 1024
+
 func NewSession(parentCtx context.Context, conn Conn) *Session {
 	ctx, cancel := context.WithCancel(parentCtx)
 
 	return &Session{
 		conn:   conn,
-		send:   make(chan contract.Content),
-		recv:   make(chan contract.Content),
+		send:   make(chan contract.Content, sessionChanSize),
+		recv:   make(chan contract.Content, sessionChanSize),
 		ctx:    ctx,
 		cancel: cancel,
 	}
@@ -104,6 +106,14 @@ func (s *Session) writeLoop() {
 			}
 		}
 	}
+}
+
+func (s *Session) Send() chan<- contract.Content {
+	return s.send
+}
+
+func (s *Session) Recv() <-chan contract.Content {
+	return s.recv
 }
 
 func (s *Session) Start() {
