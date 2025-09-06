@@ -16,15 +16,16 @@ type Conn interface {
 }
 
 type Session struct {
-	conn     Conn
-	wg       sync.WaitGroup
-	send     chan contract.Content
-	recv     chan contract.Content
-	ctx      context.Context
-	cancel   context.CancelFunc
-	errMu    sync.Mutex
-	readErr  error
-	writeErr error
+	conn      Conn
+	wg        sync.WaitGroup
+	send      chan contract.Content
+	recv      chan contract.Content
+	ctx       context.Context
+	cancel    context.CancelFunc
+	errMu     sync.Mutex
+	readErr   error
+	writeErr  error
+	closeOnce sync.Once
 }
 
 const sessionChanSize = 1024
@@ -152,11 +153,13 @@ func (s *Session) Start() {
 }
 
 func (s *Session) Close() {
-	s.cancel()
+	s.closeOnce.Do(func() {
+		s.cancel()
 
-	s.conn.CloseRead()
+		s.conn.CloseRead()
 
-	s.wg.Wait()
+		s.wg.Wait()
 
-	s.conn.Close()
+		s.conn.Close()
+	})
 }
