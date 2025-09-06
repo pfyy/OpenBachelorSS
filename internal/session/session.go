@@ -5,6 +5,7 @@ import (
 	"io"
 	"net"
 	"sync"
+	"time"
 
 	"github.com/OpenBachelor/OpenBachelorSS/pkg/contract"
 )
@@ -62,12 +63,20 @@ func (s *Session) readLoop() {
 	}
 }
 
+const writeTimeout = 10 * time.Second
+
 func (s *Session) writeContent(content contract.Content, ok bool) bool {
 	if !ok {
 		return true
 	}
 
-	err := contract.WriteContent(s.conn, content)
+	err := s.conn.SetWriteDeadline(time.Now().Add(writeTimeout))
+	if err != nil {
+		s.writeErr = err
+		return true
+	}
+
+	err = contract.WriteContent(s.conn, content)
 	if err != nil {
 		s.writeErr = err
 		return true
