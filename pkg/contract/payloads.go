@@ -119,7 +119,9 @@ func ReadContent(r io.Reader) (Content, error) {
 	return c, nil
 }
 
-func readPrefixedString(r io.Reader) (string, error) {
+const defaultMaxStrSize = 1 << 10
+
+func readPrefixedString(r io.Reader, maxStrSize int) (string, error) {
 	var length uint16
 	if err := binary.Read(r, binary.BigEndian, &length); err != nil {
 		return "", err
@@ -208,10 +210,12 @@ type BinaryUnmarshalerReader interface {
 	UnmarshalBinaryReader(r io.Reader) error
 }
 
+const defaultMaxSliceSize = 128
+
 func DeserializeSlice[T any, PT interface {
 	*T
 	BinaryUnmarshalerReader
-}](r io.Reader) ([]PT, error) {
+}](r io.Reader, maxSliceSize int) ([]PT, error) {
 	var length uint16
 	if err := binary.Read(r, binary.BigEndian, &length); err != nil {
 		return nil, err
@@ -232,7 +236,7 @@ func DeserializeSlice[T any, PT interface {
 	return items, nil
 }
 
-func DeserializePrimitiveSlice[T FixedSize](r io.Reader) ([]T, error) {
+func DeserializePrimitiveSlice[T FixedSize](r io.Reader, maxSliceSize int) ([]T, error) {
 	var length uint16
 	if err := binary.Read(r, binary.BigEndian, &length); err != nil {
 		return nil, err
@@ -286,17 +290,17 @@ func (m *S2CEnemyDuelEmojiMessage) Unmarshal(payload []byte) error {
 	reader := bytes.NewReader(payload)
 	var err error
 
-	m.PlayerID, err = readPrefixedString(reader)
+	m.PlayerID, err = readPrefixedString(reader, defaultMaxStrSize)
 	if err != nil {
 		return err
 	}
 
-	m.EmojiGroup, err = readPrefixedString(reader)
+	m.EmojiGroup, err = readPrefixedString(reader, defaultMaxStrSize)
 	if err != nil {
 		return err
 	}
 
-	m.EmojiID, err = readPrefixedString(reader)
+	m.EmojiID, err = readPrefixedString(reader, defaultMaxStrSize)
 	if err != nil {
 		return err
 	}
@@ -482,12 +486,12 @@ func (t *EnemyDuelBattleStatusEntryData) UnmarshalBinaryReader(r io.Reader) erro
 		return err
 	}
 
-	t.SeedHistory, err = DeserializePrimitiveSlice[uint32](r)
+	t.SeedHistory, err = DeserializePrimitiveSlice[uint32](r, defaultMaxSliceSize)
 	if err != nil {
 		return err
 	}
 
-	t.SideHistory, err = DeserializePrimitiveSlice[uint8](r)
+	t.SideHistory, err = DeserializePrimitiveSlice[uint8](r, defaultMaxSliceSize)
 	if err != nil {
 		return err
 	}
@@ -538,7 +542,7 @@ func (t *EnemyDuelBattleStatusBetItem) MarshalBinary() ([]byte, error) {
 func (t *EnemyDuelBattleStatusBetItem) UnmarshalBinaryReader(r io.Reader) error {
 	var err error
 
-	t.PlayerID, err = readPrefixedString(r)
+	t.PlayerID, err = readPrefixedString(r, defaultMaxStrSize)
 	if err != nil {
 		return err
 	}
@@ -627,7 +631,7 @@ func (t *EnemyDuelBattleStatusRoundLeaderBoard) MarshalBinary() ([]byte, error) 
 func (t *EnemyDuelBattleStatusRoundLeaderBoard) UnmarshalBinaryReader(r io.Reader) error {
 	var err error
 
-	t.PlayerID, err = readPrefixedString(r)
+	t.PlayerID, err = readPrefixedString(r, defaultMaxStrSize)
 	if err != nil {
 		return err
 	}
@@ -751,17 +755,17 @@ func (m *S2CEnemyDuelClientStateMessage) Unmarshal(payload []byte) error {
 		return err
 	}
 
-	m.SrcEntryData, err = DeserializeSlice[EnemyDuelBattleStatusEntryData, *EnemyDuelBattleStatusEntryData](reader)
+	m.SrcEntryData, err = DeserializeSlice[EnemyDuelBattleStatusEntryData, *EnemyDuelBattleStatusEntryData](reader, defaultMaxSliceSize)
 	if err != nil {
 		return err
 	}
 
-	m.BetList, err = DeserializeSlice[EnemyDuelBattleStatusBetItem, *EnemyDuelBattleStatusBetItem](reader)
+	m.BetList, err = DeserializeSlice[EnemyDuelBattleStatusBetItem, *EnemyDuelBattleStatusBetItem](reader, defaultMaxSliceSize)
 	if err != nil {
 		return err
 	}
 
-	m.LeaderBoard, err = DeserializeSlice[EnemyDuelBattleStatusRoundLeaderBoard, *EnemyDuelBattleStatusRoundLeaderBoard](reader)
+	m.LeaderBoard, err = DeserializeSlice[EnemyDuelBattleStatusRoundLeaderBoard, *EnemyDuelBattleStatusRoundLeaderBoard](reader, defaultMaxSliceSize)
 	if err != nil {
 		return err
 	}
@@ -812,22 +816,22 @@ func (t *EnemyDuelServicePlayer) MarshalBinary() ([]byte, error) {
 func (t *EnemyDuelServicePlayer) UnmarshalBinaryReader(r io.Reader) error {
 	var err error
 
-	t.PlayerID, err = readPrefixedString(r)
+	t.PlayerID, err = readPrefixedString(r, defaultMaxStrSize)
 	if err != nil {
 		return err
 	}
 
-	t.AvatarID, err = readPrefixedString(r)
+	t.AvatarID, err = readPrefixedString(r, defaultMaxStrSize)
 	if err != nil {
 		return err
 	}
 
-	t.NickName, err = readPrefixedString(r)
+	t.NickName, err = readPrefixedString(r, defaultMaxStrSize)
 	if err != nil {
 		return err
 	}
 
-	t.AvatarType, err = readPrefixedString(r)
+	t.AvatarType, err = readPrefixedString(r, defaultMaxStrSize)
 	if err != nil {
 		return err
 	}
@@ -924,12 +928,12 @@ func (m *S2CEnemyDuelJoinMessage) Unmarshal(payload []byte) error {
 		return err
 	}
 
-	m.NewToken, err = readPrefixedString(reader)
+	m.NewToken, err = readPrefixedString(reader, defaultMaxStrSize)
 	if err != nil {
 		return err
 	}
 
-	m.StageID, err = readPrefixedString(reader)
+	m.StageID, err = readPrefixedString(reader, defaultMaxStrSize)
 	if err != nil {
 		return err
 	}
@@ -939,7 +943,7 @@ func (m *S2CEnemyDuelJoinMessage) Unmarshal(payload []byte) error {
 		return err
 	}
 
-	m.Players, err = DeserializeSlice[EnemyDuelServicePlayer, *EnemyDuelServicePlayer](reader)
+	m.Players, err = DeserializeSlice[EnemyDuelServicePlayer, *EnemyDuelServicePlayer](reader, defaultMaxSliceSize)
 	if err != nil {
 		return err
 	}
@@ -1077,7 +1081,7 @@ func (m *S2CEnemyDuelHistoryMessage) Unmarshal(payload []byte) error {
 	reader := bytes.NewReader(payload)
 	var err error
 
-	m.Steps, err = DeserializeSlice[EnemyDuelServiceStepData, *EnemyDuelServiceStepData](reader)
+	m.Steps, err = DeserializeSlice[EnemyDuelServiceStepData, *EnemyDuelServiceStepData](reader, defaultMaxSliceSize)
 	if err != nil {
 		return err
 	}
@@ -1117,12 +1121,12 @@ func (m *C2SEnemyDuelEmojiMessage) Unmarshal(payload []byte) error {
 	reader := bytes.NewReader(payload)
 	var err error
 
-	m.EmojiGroup, err = readPrefixedString(reader)
+	m.EmojiGroup, err = readPrefixedString(reader, defaultMaxStrSize)
 	if err != nil {
 		return err
 	}
 
-	m.EmojiID, err = readPrefixedString(reader)
+	m.EmojiID, err = readPrefixedString(reader, defaultMaxStrSize)
 	if err != nil {
 		return err
 	}
@@ -1180,17 +1184,17 @@ func (m *C2SEnemyDuelJoinMessage) Unmarshal(payload []byte) error {
 	reader := bytes.NewReader(payload)
 	var err error
 
-	m.PlayerID, err = readPrefixedString(reader)
+	m.PlayerID, err = readPrefixedString(reader, defaultMaxStrSize)
 	if err != nil {
 		return err
 	}
 
-	m.SceneID, err = readPrefixedString(reader)
+	m.SceneID, err = readPrefixedString(reader, defaultMaxStrSize)
 	if err != nil {
 		return err
 	}
 
-	m.Token, err = readPrefixedString(reader)
+	m.Token, err = readPrefixedString(reader, defaultMaxStrSize)
 	if err != nil {
 		return err
 	}
@@ -1239,12 +1243,12 @@ func (m *C2SEnemyDuelRoundSettleMessage) Unmarshal(payload []byte) error {
 		return err
 	}
 
-	m.Info, err = readPrefixedString(reader)
+	m.Info, err = readPrefixedString(reader, defaultMaxStrSize)
 	if err != nil {
 		return err
 	}
 
-	m.InfoHash, err = readPrefixedString(reader)
+	m.InfoHash, err = readPrefixedString(reader, defaultMaxStrSize)
 	if err != nil {
 		return err
 	}
@@ -1294,7 +1298,7 @@ func (m *C2SEnemyDuelBetMessage) Unmarshal(payload []byte) error {
 	reader := bytes.NewReader(payload)
 	var err error
 
-	m.PlayerID, err = readPrefixedString(reader)
+	m.PlayerID, err = readPrefixedString(reader, defaultMaxStrSize)
 	if err != nil {
 		return err
 	}
