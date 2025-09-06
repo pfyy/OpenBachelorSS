@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"net"
-	"os"
 
 	"github.com/OpenBachelor/OpenBachelorSS/internal/session"
 )
@@ -23,8 +22,7 @@ func main() {
 
 	listener, err := net.Listen("tcp", listenAddress)
 	if err != nil {
-		log.Printf("failed to listen: %v", err)
-		os.Exit(1)
+		log.Fatalf("failed to listen: %v", err)
 	}
 
 	defer listener.Close()
@@ -39,7 +37,7 @@ func main() {
 
 		conn, ok := netConn.(session.Conn)
 		if !ok {
-			log.Printf("not a valid conn")
+			log.Printf("not a valid conn type: %T", netConn)
 			continue
 		}
 
