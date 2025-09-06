@@ -66,19 +66,27 @@ func (s *Session) readLoop() {
 	}
 }
 
+func (s *Session) writeContent(content contract.Content, ok bool) bool {
+	if !ok {
+		return true
+	}
+
+	err := contract.WriteContent(s.conn, content)
+	if err != nil {
+		s.setErr(err)
+		return true
+	}
+
+	return false
+}
+
 func (s *Session) writeLoop() {
 	defer s.wg.Done()
 
 	for {
 		select {
 		case content, ok := <-s.send:
-			if !ok {
-				return
-			}
-
-			err := contract.WriteContent(s.conn, content)
-			if err != nil {
-				s.setErr(err)
+			if s.writeContent(content, ok) {
 				return
 			}
 
@@ -86,13 +94,7 @@ func (s *Session) writeLoop() {
 			for {
 				select {
 				case content, ok := <-s.send:
-					if !ok {
-						return
-					}
-
-					err := contract.WriteContent(s.conn, content)
-					if err != nil {
-						s.setErr(err)
+					if s.writeContent(content, ok) {
 						return
 					}
 
