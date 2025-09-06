@@ -59,6 +59,7 @@ func (s *Session) readLoop() {
 		}
 
 		if err != nil {
+			// windows does not return EOF after calling CloseRead()
 			if s.ctx.Err() == nil {
 				s.setReadErr(err)
 			}
