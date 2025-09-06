@@ -121,10 +121,14 @@ func ReadContent(r io.Reader) (Content, error) {
 
 const defaultMaxStrSize = 1 << 10
 
-func readPrefixedString(r io.Reader, maxStrSize int) (string, error) {
+func readPrefixedString(r io.Reader, maxStrSize uint16) (string, error) {
 	var length uint16
 	if err := binary.Read(r, binary.BigEndian, &length); err != nil {
 		return "", err
+	}
+
+	if length > maxStrSize {
+		return "", fmt.Errorf("string too long")
 	}
 
 	stringBytes := make([]byte, length)
@@ -215,10 +219,14 @@ const defaultMaxSliceSize = 128
 func DeserializeSlice[T any, PT interface {
 	*T
 	BinaryUnmarshalerReader
-}](r io.Reader, maxSliceSize int) ([]PT, error) {
+}](r io.Reader, maxSliceSize uint16) ([]PT, error) {
 	var length uint16
 	if err := binary.Read(r, binary.BigEndian, &length); err != nil {
 		return nil, err
+	}
+
+	if length > maxSliceSize {
+		return nil, fmt.Errorf("slice too long")
 	}
 
 	items := make([]PT, length)
@@ -236,10 +244,14 @@ func DeserializeSlice[T any, PT interface {
 	return items, nil
 }
 
-func DeserializePrimitiveSlice[T FixedSize](r io.Reader, maxSliceSize int) ([]T, error) {
+func DeserializePrimitiveSlice[T FixedSize](r io.Reader, maxSliceSize uint16) ([]T, error) {
 	var length uint16
 	if err := binary.Read(r, binary.BigEndian, &length); err != nil {
 		return nil, err
+	}
+
+	if length > maxSliceSize {
+		return nil, fmt.Errorf("slice too long")
 	}
 
 	items := make([]T, length)
