@@ -120,6 +120,7 @@ func (h *Hub) readSession(s *session.Session, g *game.SessionGameStatus) {
 func (h *Hub) AddSession(s *session.Session) error {
 	g, err := h.addSession(s)
 	if err != nil {
+		s.Close()
 		return err
 	}
 
