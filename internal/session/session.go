@@ -46,6 +46,9 @@ func NewSession(parentCtx context.Context, conn Conn) *Session {
 func (s *Session) setReadErr(err error) {
 	s.errMu.Lock()
 	defer s.errMu.Unlock()
+	if s.readErr != nil {
+		return
+	}
 	s.readErr = err
 }
 
@@ -80,6 +83,9 @@ const writeTimeout = 10 * time.Second
 func (s *Session) setWriteErr(err error) {
 	s.errMu.Lock()
 	defer s.errMu.Unlock()
+	if s.writeErr != nil {
+		return
+	}
 	s.writeErr = err
 }
 
