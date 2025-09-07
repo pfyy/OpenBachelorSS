@@ -14,6 +14,7 @@ import (
 )
 
 func handleConnection(ctx context.Context, conn net.Conn) {
+	cfg := config.Get()
 
 	tcpConn, ok := conn.(*net.TCPConn)
 	if !ok {
@@ -21,7 +22,9 @@ func handleConnection(ctx context.Context, conn net.Conn) {
 		return
 	}
 
-	log.Printf("conn: %+v", tcpConn.RemoteAddr())
+	if cfg.Server.Debug {
+		log.Printf("conn: %+v", tcpConn.RemoteAddr())
+	}
 
 	s := session.NewSession(ctx, tcpConn)
 	s.Start()

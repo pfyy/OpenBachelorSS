@@ -9,7 +9,8 @@ import (
 
 type Config struct {
 	Server struct {
-		Addr string `yaml:"addr"`
+		Addr  string `yaml:"addr"`
+		Debug bool   `yaml:"debug"`
 	} `yaml:"server"`
 }
 

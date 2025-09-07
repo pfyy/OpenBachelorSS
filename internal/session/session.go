@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"sync"
 	"time"
 
+	"github.com/OpenBachelor/OpenBachelorSS/internal/config"
 	"github.com/OpenBachelor/OpenBachelorSS/pkg/contract"
 )
 
@@ -72,6 +74,10 @@ func (s *Session) readLoop() {
 
 		select {
 		case s.recv <- content:
+			cfg := config.Get()
+			if cfg.Server.Debug {
+				log.Printf("%+v -> %+v", s.conn.RemoteAddr(), content)
+			}
 		case <-s.ctx.Done():
 			return
 		}
@@ -92,6 +98,11 @@ func (s *Session) setWriteErr(err error) {
 func (s *Session) writeContent(content contract.Content, ok bool) bool {
 	if !ok {
 		return true
+	}
+
+	cfg := config.Get()
+	if cfg.Server.Debug {
+		log.Printf("%+v <- %+v", s.conn.RemoteAddr(), content)
 	}
 
 	err := s.conn.SetWriteDeadline(time.Now().Add(writeTimeout))
