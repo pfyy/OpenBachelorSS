@@ -23,6 +23,7 @@ func init() {
 	RegisterMessage(S2CEnemyDuelEndMessageType, func() Content { return &S2CEnemyDuelEndMessage{} })
 	RegisterMessage(S2CEnemyDuelHistoryMessageType, func() Content { return &S2CEnemyDuelHistoryMessage{} })
 	RegisterMessage(S2CEnemyDuelTeamJoinMessageType, func() Content { return &S2CEnemyDuelTeamJoinMessage{} })
+	RegisterMessage(S2CEnemyDuelKickMessageType, func() Content { return &S2CEnemyDuelKickMessage{} })
 
 	RegisterMessage(C2SEnemyDuelEmojiMessageType, func() Content { return &C2SEnemyDuelEmojiMessage{} })
 	RegisterMessage(C2SEnemyDuelReadyMessageType, func() Content { return &C2SEnemyDuelReadyMessage{} })
@@ -1150,6 +1151,38 @@ func (m *S2CEnemyDuelTeamJoinMessage) Unmarshal(payload []byte) error {
 	}
 
 	err = binary.Read(reader, binary.BigEndian, &m.SvrTime)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type S2CEnemyDuelKickMessage struct {
+	Reason uint8
+}
+
+func (m *S2CEnemyDuelKickMessage) ContentType() uint32 {
+	return S2CEnemyDuelKickMessageType
+}
+
+func (m *S2CEnemyDuelKickMessage) Marshal() ([]byte, error) {
+	var buf bytes.Buffer
+	var err error
+
+	err = binary.Write(&buf, binary.BigEndian, m.Reason)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
+func (m *S2CEnemyDuelKickMessage) Unmarshal(payload []byte) error {
+	reader := bytes.NewReader(payload)
+	var err error
+
+	err = binary.Read(reader, binary.BigEndian, &m.Reason)
 	if err != nil {
 		return err
 	}

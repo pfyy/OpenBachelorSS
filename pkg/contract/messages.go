@@ -10,6 +10,7 @@ const (
 	S2CEnemyDuelEndMessageType         = 206
 	S2CEnemyDuelHistoryMessageType     = 212
 	S2CEnemyDuelTeamJoinMessageType    = 602
+	S2CEnemyDuelKickMessageType        = 714
 )
 
 const (
