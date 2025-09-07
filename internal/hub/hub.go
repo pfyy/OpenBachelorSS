@@ -19,6 +19,7 @@ func NewHub(parentCtx context.Context) *Hub {
 	return &Hub{
 		ctx:    ctx,
 		cancel: cancel,
+		done:   make(chan struct{}),
 	}
 }
 
