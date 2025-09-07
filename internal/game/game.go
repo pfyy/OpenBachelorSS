@@ -26,12 +26,12 @@ func SetEnemyDuelGameCtx(parentCtx context.Context) {
 	enemyDuelGamesCtx, enemyDuelGamesCancel = context.WithCancel(parentCtx)
 }
 
-func StopEnemyDuelGame() {
+func StopEnemyDuelGames() {
 	enemyDuelGamesCancel()
 
 	setNoNewGame()
 
-	stopEnemyDuelGame()
+	stopEnemyDuelGames()
 }
 
 func setNoNewGame() {
@@ -76,7 +76,7 @@ func getEnemyDuelGamesSlice() []*EnemyDuelGame {
 	return enemyDuelGamesSlice
 }
 
-func stopEnemyDuelGame() {
+func stopEnemyDuelGames() {
 	enemyDuelGamesSlice := getEnemyDuelGamesSlice()
 
 	for _, game := range enemyDuelGamesSlice {

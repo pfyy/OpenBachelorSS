@@ -85,7 +85,7 @@ func main() {
 	defer stop()
 
 	game.SetEnemyDuelGameCtx(ctx)
-	defer game.StopEnemyDuelGame()
+	defer game.StopEnemyDuelGames()
 
 	h := hub.NewHub(ctx)
 	h.Start()
