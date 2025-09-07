@@ -54,6 +54,15 @@ func registerGame(game *EnemyDuelGame) error {
 	return nil
 }
 
+func unregisterGame(game *EnemyDuelGame) error {
+	enemyDuelGamesMu.Lock()
+	defer enemyDuelGamesMu.Unlock()
+
+	delete(enemyDuelGames, game.GameID)
+
+	return nil
+}
+
 func getEnemyDuelGamesSlice() []*EnemyDuelGame {
 	enemyDuelGamesMu.Lock()
 	defer enemyDuelGamesMu.Unlock()
@@ -152,6 +161,8 @@ func (gm *EnemyDuelGame) Stop() {
 		gm.cancel()
 
 		gm.wg.Wait()
+
+		unregisterGame(gm)
 	})
 }
 
