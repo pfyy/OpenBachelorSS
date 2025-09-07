@@ -15,7 +15,7 @@ import (
 	"github.com/OpenBachelor/OpenBachelorSS/internal/session"
 )
 
-func handleConnection(ctx context.Context, conn net.Conn, hub *hub.Hub, wg *sync.WaitGroup) {
+func handleConnection(ctx context.Context, conn net.Conn, h *hub.Hub, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	cfg := config.Get()
@@ -35,7 +35,7 @@ func handleConnection(ctx context.Context, conn net.Conn, hub *hub.Hub, wg *sync
 	defer s.Close()
 }
 
-func mainLoop(ctx context.Context, hub *hub.Hub) error {
+func mainLoop(ctx context.Context, h *hub.Hub) error {
 	cfg := config.Get()
 
 	listener, err := net.Listen("tcp", cfg.Server.Addr)
@@ -64,7 +64,7 @@ func mainLoop(ctx context.Context, hub *hub.Hub) error {
 		}
 
 		wg.Add(1)
-		go handleConnection(ctx, conn, hub, &wg)
+		go handleConnection(ctx, conn, h, &wg)
 	}
 
 	wg.Wait()
@@ -76,9 +76,9 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	hub := hub.NewHub(ctx)
+	h := hub.NewHub(ctx)
 
-	err := mainLoop(ctx, hub)
+	err := mainLoop(ctx, h)
 
 	if err != nil {
 		log.Fatalf("failed to start main loop: %v", err)
