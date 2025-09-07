@@ -96,4 +96,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to start main loop: %v", err)
 	}
+
+	log.Printf("closing server")
 }
