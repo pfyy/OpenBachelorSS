@@ -98,6 +98,18 @@ type EnemyDuelGameEntryState struct {
 	Base EnemyDuelGameBaseState
 }
 
+func (s *EnemyDuelGameEntryState) OnEnter() {
+
+}
+
+func (s *EnemyDuelGameEntryState) OnExit() {
+
+}
+
+func (s *EnemyDuelGameEntryState) Update() {
+
+}
+
 type EnemyDuelGameBetState struct {
 	Base EnemyDuelGameBaseState
 }
@@ -131,6 +143,8 @@ func NewEnemyDuelGame(gameID string) *EnemyDuelGame {
 		ctx:    ctx,
 		cancel: cancel,
 	}
+
+	gm.SetState(&EnemyDuelGameEntryState{Base: EnemyDuelGameBaseState{EnemyDuel: gm}})
 
 	return gm
 }
