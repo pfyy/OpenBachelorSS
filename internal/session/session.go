@@ -64,18 +64,38 @@ func (s *Session) readLoop() {
 	defer s.wg.Done()
 	defer close(s.recv)
 
-	for {
+	type ReadResult struct {
+		content contract.Content
+		err     error
+	}
+	readResultChan := make(chan ReadResult)
+	go func() {
 		// this line is still blocking on windows even if CloseRead() is called, fuck windows
 		content, err := contract.ReadContent(s.conn)
-		if err == io.EOF {
-			return
-		}
 
-		if err != nil {
-			// windows does not return EOF after calling CloseRead()
-			if s.ctx.Err() == nil {
-				s.setReadErr(err)
+		readResultChan <- ReadResult{content: content, err: err}
+	}()
+
+	for {
+		var content contract.Content
+		var err error
+
+		select {
+		case readResult := <-readResultChan:
+			content, err = readResult.content, readResult.err
+			if err == io.EOF {
+				return
 			}
+
+			if err != nil {
+				// windows does not return EOF after calling CloseRead()
+				if s.ctx.Err() == nil {
+					s.setReadErr(err)
+				}
+				return
+			}
+
+		case <-s.ctx.Done():
 			return
 		}
 
