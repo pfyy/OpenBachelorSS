@@ -53,7 +53,7 @@ func (s *Session) setReadErr(err error) {
 	}
 	cfg := config.Get()
 	if cfg.Server.Debug {
-		log.Printf("%+v readErr: err %v", s.conn.RemoteAddr(), err)
+		log.Printf("%+v readErr: %v", s.conn.RemoteAddr(), err)
 	}
 	s.readErr = err
 }
@@ -98,7 +98,7 @@ func (s *Session) setWriteErr(err error) {
 	}
 	cfg := config.Get()
 	if cfg.Server.Debug {
-		log.Printf("%+v writeErr: err %v", s.conn.RemoteAddr(), err)
+		log.Printf("%+v writeErr: %v", s.conn.RemoteAddr(), err)
 	}
 	s.writeErr = err
 }
