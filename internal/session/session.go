@@ -210,3 +210,7 @@ func (s *Session) IsClosed() bool {
 		return false
 	}
 }
+
+func (s *Session) Done() <-chan struct{} {
+	return s.done
+}

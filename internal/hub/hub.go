@@ -65,11 +65,25 @@ func (h *Hub) addSession(s *session.Session) error {
 	return nil
 }
 
+func (h *Hub) removeSession(s *session.Session) {
+	defer h.wg.Done()
+
+	<-s.Done()
+
+	h.sessionsMu.Lock()
+	defer h.sessionsMu.Unlock()
+
+	delete(h.sessions, s)
+}
+
 func (h *Hub) AddSession(s *session.Session) error {
 	err := h.addSession(s)
 	if err != nil {
 		return err
 	}
+
+	h.wg.Add(1)
+	go h.removeSession(s)
 
 	return nil
 }
