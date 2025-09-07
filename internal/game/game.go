@@ -154,7 +154,9 @@ func (gm *EnemyDuelGame) SetState(newState EnemyDuelGameState) {
 		gm.state.OnExit()
 	}
 	gm.state = newState
-	gm.state.OnEnter()
+	if gm.state != nil {
+		gm.state.OnEnter()
+	}
 }
 
 func (gm *EnemyDuelGame) Run() {
@@ -170,6 +172,8 @@ func (gm *EnemyDuelGame) Run() {
 			case <-ticker.C:
 				if gm.state != nil {
 					gm.state.Update()
+				} else {
+					return
 				}
 			case <-gm.ctx.Done():
 				return
