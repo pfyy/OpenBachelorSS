@@ -7,7 +7,7 @@ import (
 
 type SessionGameStatus struct{}
 
-type Game struct{}
+type EnemyDuelGame struct{}
 
 func HandleSessionMessage(s *session.Session, g *SessionGameStatus, c contract.Content) {
 
