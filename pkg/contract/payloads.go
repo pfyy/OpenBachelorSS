@@ -32,6 +32,7 @@ func init() {
 	RegisterMessage(C2SEnemyDuelQuitMessageType, func() Content { return &C2SEnemyDuelQuitMessage{} })
 	RegisterMessage(C2SEnemyDuelHeartBeatMessageType, func() Content { return &C2SEnemyDuelHeartBeatMessage{} })
 	RegisterMessage(C2SEnemyDuelFinalSettleMessageType, func() Content { return &C2SEnemyDuelFinalSettleMessage{} })
+	RegisterMessage(C2SEnemyDuelTeamJoinMessageType, func() Content { return &C2SEnemyDuelTeamJoinMessage{} })
 }
 
 type UnknownMessage struct {
@@ -1433,5 +1434,59 @@ func (m *C2SEnemyDuelFinalSettleMessage) Marshal() ([]byte, error) {
 }
 
 func (m *C2SEnemyDuelFinalSettleMessage) Unmarshal(payload []byte) error {
+	return nil
+}
+
+type C2SEnemyDuelTeamJoinMessage struct {
+	PlayerID  string
+	TeamID    string
+	TeamToken string
+}
+
+func (m *C2SEnemyDuelTeamJoinMessage) ContentType() uint32 {
+	return C2SEnemyDuelTeamJoinMessageType
+}
+
+func (m *C2SEnemyDuelTeamJoinMessage) Marshal() ([]byte, error) {
+	var buf bytes.Buffer
+	var err error
+
+	err = writePrefixedString(&buf, m.PlayerID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = writePrefixedString(&buf, m.TeamID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = writePrefixedString(&buf, m.TeamToken)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
+func (m *C2SEnemyDuelTeamJoinMessage) Unmarshal(payload []byte) error {
+	reader := bytes.NewReader(payload)
+	var err error
+
+	m.PlayerID, err = readPrefixedString(reader, defaultMaxStrSize)
+	if err != nil {
+		return err
+	}
+
+	m.TeamID, err = readPrefixedString(reader, defaultMaxStrSize)
+	if err != nil {
+		return err
+	}
+
+	m.TeamToken, err = readPrefixedString(reader, defaultMaxStrSize)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

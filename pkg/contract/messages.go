@@ -21,4 +21,5 @@ const (
 	C2SEnemyDuelQuitMessageType        = 203
 	C2SEnemyDuelHeartBeatMessageType   = 1
 	C2SEnemyDuelFinalSettleMessageType = 221
+	C2SEnemyDuelTeamJoinMessageType    = 601
 )
