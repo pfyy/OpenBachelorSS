@@ -82,7 +82,7 @@ func (s *Session) readLoop() {
 		case s.recv <- content:
 			cfg := config.Get()
 			if cfg.Server.Debug {
-				log.Printf("%+v -> %+v", s.conn.RemoteAddr(), content)
+				log.Printf("%+v -> %#v", s.conn.RemoteAddr(), content)
 			}
 		case <-s.ctx.Done():
 			return
@@ -112,7 +112,7 @@ func (s *Session) writeContent(content contract.Content, ok bool) bool {
 
 	cfg := config.Get()
 	if cfg.Server.Debug {
-		log.Printf("%+v <- %+v", s.conn.RemoteAddr(), content)
+		log.Printf("%+v <- %#v", s.conn.RemoteAddr(), content)
 	}
 
 	err := s.conn.SetWriteDeadline(time.Now().Add(writeTimeout))
