@@ -24,6 +24,7 @@ func init() {
 	RegisterMessage(S2CEnemyDuelHistoryMessageType, func() Content { return &S2CEnemyDuelHistoryMessage{} })
 	RegisterMessage(S2CEnemyDuelTeamJoinMessageType, func() Content { return &S2CEnemyDuelTeamJoinMessage{} })
 	RegisterMessage(S2CEnemyDuelKickMessageType, func() Content { return &S2CEnemyDuelKickMessage{} })
+	RegisterMessage(S2CEnemyDuelTeamStatusMessageType, func() Content { return &S2CEnemyDuelTeamStatusMessage{} })
 
 	RegisterMessage(C2SEnemyDuelEmojiMessageType, func() Content { return &C2SEnemyDuelEmojiMessage{} })
 	RegisterMessage(C2SEnemyDuelReadyMessageType, func() Content { return &C2SEnemyDuelReadyMessage{} })
@@ -1183,6 +1184,244 @@ func (m *S2CEnemyDuelKickMessage) Unmarshal(payload []byte) error {
 	var err error
 
 	err = binary.Read(reader, binary.BigEndian, &m.Reason)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type EnemyDuelPlayerStatus struct {
+	PlayerID   string
+	NickName   string
+	AvatarType string
+	AvatarID   string
+	State      uint8
+	ConnLeave  uint8
+	JoinTs     uint64
+}
+
+func (t *EnemyDuelPlayerStatus) MarshalBinary() ([]byte, error) {
+	var buf bytes.Buffer
+	var err error
+
+	err = writePrefixedString(&buf, t.PlayerID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = writePrefixedString(&buf, t.NickName)
+	if err != nil {
+		return nil, err
+	}
+
+	err = writePrefixedString(&buf, t.AvatarType)
+	if err != nil {
+		return nil, err
+	}
+
+	err = writePrefixedString(&buf, t.AvatarID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = binary.Write(&buf, binary.BigEndian, t.State)
+	if err != nil {
+		return nil, err
+	}
+
+	err = binary.Write(&buf, binary.BigEndian, t.ConnLeave)
+	if err != nil {
+		return nil, err
+	}
+
+	err = binary.Write(&buf, binary.BigEndian, t.JoinTs)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
+func (t *EnemyDuelPlayerStatus) UnmarshalBinaryReader(r io.Reader) error {
+	var err error
+
+	t.PlayerID, err = readPrefixedString(r, defaultMaxStrSize)
+	if err != nil {
+		return err
+	}
+
+	t.NickName, err = readPrefixedString(r, defaultMaxStrSize)
+	if err != nil {
+		return err
+	}
+
+	t.AvatarType, err = readPrefixedString(r, defaultMaxStrSize)
+	if err != nil {
+		return err
+	}
+
+	t.AvatarID, err = readPrefixedString(r, defaultMaxStrSize)
+	if err != nil {
+		return err
+	}
+
+	err = binary.Read(r, binary.BigEndian, &t.State)
+	if err != nil {
+		return err
+	}
+
+	err = binary.Read(r, binary.BigEndian, &t.ConnLeave)
+	if err != nil {
+		return err
+	}
+
+	err = binary.Read(r, binary.BigEndian, &t.JoinTs)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type S2CEnemyDuelTeamStatusMessage struct {
+	State          uint8
+	Owner          string
+	TeamStateEndTs uint64
+	StageID        string
+	ModeID         string
+	Players        []*EnemyDuelPlayerStatus
+	SceneID        string
+	Address        string
+	Token          string
+	AllowNpc       uint8
+}
+
+func (m *S2CEnemyDuelTeamStatusMessage) ContentType() uint32 {
+	return S2CEnemyDuelTeamStatusMessageType
+}
+
+func (m *S2CEnemyDuelTeamStatusMessage) Marshal() ([]byte, error) {
+	var buf bytes.Buffer
+	var err error
+
+	err = binary.Write(&buf, binary.BigEndian, m.State)
+	if err != nil {
+		return nil, err
+	}
+
+	err = writePrefixedString(&buf, m.Owner)
+	if err != nil {
+		return nil, err
+	}
+
+	err = binary.Write(&buf, binary.BigEndian, m.TeamStateEndTs)
+	if err != nil {
+		return nil, err
+	}
+
+	err = writePrefixedString(&buf, m.StageID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = writePrefixedString(&buf, m.ModeID)
+	if err != nil {
+		return nil, err
+	}
+
+	players, err := SerializeSlice(m.Players)
+	if err != nil {
+		return nil, err
+	}
+	_, err = buf.Write(players)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = buf.Write([]byte{0, 0})
+	if err != nil {
+		return nil, err
+	}
+
+	err = writePrefixedString(&buf, m.SceneID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = writePrefixedString(&buf, m.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	err = writePrefixedString(&buf, m.Token)
+	if err != nil {
+		return nil, err
+	}
+
+	err = binary.Write(&buf, binary.BigEndian, m.AllowNpc)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
+func (m *S2CEnemyDuelTeamStatusMessage) Unmarshal(payload []byte) error {
+	reader := bytes.NewReader(payload)
+	var err error
+
+	err = binary.Read(reader, binary.BigEndian, &m.State)
+	if err != nil {
+		return err
+	}
+
+	m.Owner, err = readPrefixedString(reader, defaultMaxStrSize)
+	if err != nil {
+		return err
+	}
+
+	err = binary.Read(reader, binary.BigEndian, &m.TeamStateEndTs)
+	if err != nil {
+		return err
+	}
+
+	m.StageID, err = readPrefixedString(reader, defaultMaxStrSize)
+	if err != nil {
+		return err
+	}
+
+	m.ModeID, err = readPrefixedString(reader, defaultMaxStrSize)
+	if err != nil {
+		return err
+	}
+
+	m.Players, err = DeserializeSlice[EnemyDuelPlayerStatus, *EnemyDuelPlayerStatus](reader, defaultMaxSliceSize)
+	if err != nil {
+		return err
+	}
+
+	_, err = io.CopyN(io.Discard, reader, 2)
+	if err != nil {
+		return err
+	}
+
+	m.SceneID, err = readPrefixedString(reader, defaultMaxStrSize)
+	if err != nil {
+		return err
+	}
+
+	m.Address, err = readPrefixedString(reader, defaultMaxStrSize)
+	if err != nil {
+		return err
+	}
+
+	m.Token, err = readPrefixedString(reader, defaultMaxStrSize)
+	if err != nil {
+		return err
+	}
+
+	err = binary.Read(reader, binary.BigEndian, &m.AllowNpc)
 	if err != nil {
 		return err
 	}

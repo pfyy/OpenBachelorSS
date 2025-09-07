@@ -11,6 +11,7 @@ const (
 	S2CEnemyDuelHistoryMessageType     = 212
 	S2CEnemyDuelTeamJoinMessageType    = 602
 	S2CEnemyDuelKickMessageType        = 714
+	S2CEnemyDuelTeamStatusMessageType  = 702
 )
 
 const (
