@@ -11,6 +11,7 @@ import (
 	"syscall"
 
 	"github.com/OpenBachelor/OpenBachelorSS/internal/config"
+	"github.com/OpenBachelor/OpenBachelorSS/internal/game"
 	"github.com/OpenBachelor/OpenBachelorSS/internal/hub"
 	"github.com/OpenBachelor/OpenBachelorSS/internal/session"
 )
@@ -82,6 +83,9 @@ func mainLoop(ctx context.Context, h *hub.Hub) error {
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
+
+	game.SetEnemyDuelGameCtx(ctx)
+	defer game.StopEnemyDuelGame()
 
 	h := hub.NewHub(ctx)
 	h.Start()
