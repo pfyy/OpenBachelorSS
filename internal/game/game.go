@@ -51,6 +51,15 @@ func registerGame(game *EnemyDuelGame) error {
 
 	enemyDuelGames[game.GameID] = game
 
+	game.wg.Add(1)
+	go func(g *EnemyDuelGame) {
+		defer g.wg.Done()
+
+		<-g.ctx.Done()
+
+		unregisterGame(g)
+	}(game)
+
 	return nil
 }
 
@@ -173,6 +182,7 @@ func (gm *EnemyDuelGame) Run() {
 				if gm.state != nil {
 					gm.state.Update()
 				} else {
+					gm.cancel()
 					return
 				}
 			case <-gm.ctx.Done():
