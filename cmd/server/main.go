@@ -7,13 +7,16 @@ import (
 	"log"
 	"net"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	"github.com/OpenBachelor/OpenBachelorSS/internal/config"
 	"github.com/OpenBachelor/OpenBachelorSS/internal/session"
 )
 
-func handleConnection(ctx context.Context, conn net.Conn) {
+func handleConnection(ctx context.Context, conn net.Conn, wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	cfg := config.Get()
 
 	tcpConn, ok := conn.(*net.TCPConn)
@@ -46,6 +49,8 @@ func mainLoop(ctx context.Context) error {
 		}
 	}()
 
+	var wg sync.WaitGroup
+
 	for {
 		conn, err := listener.Accept()
 		if errors.Is(err, net.ErrClosed) {
@@ -57,8 +62,11 @@ func mainLoop(ctx context.Context) error {
 			continue
 		}
 
-		go handleConnection(ctx, conn)
+		wg.Add(1)
+		go handleConnection(ctx, conn, &wg)
 	}
+
+	wg.Wait()
 
 	return nil
 }
