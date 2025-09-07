@@ -136,21 +136,24 @@ type EnemyDuelGameFinishState struct {
 }
 
 type EnemyDuelGame struct {
-	GameID   string
-	state    EnemyDuelGameState
-	wg       sync.WaitGroup
-	ctx      context.Context
-	cancel   context.CancelFunc
-	stopOnce sync.Once
+	GameID     string
+	state      EnemyDuelGameState
+	wg         sync.WaitGroup
+	ctx        context.Context
+	cancel     context.CancelFunc
+	stopOnce   sync.Once
+	sessionsMu sync.Mutex
+	sessions   map[*session.Session]*SessionGameStatus
 }
 
 func NewEnemyDuelGame(gameID string) *EnemyDuelGame {
 	ctx, cancel := context.WithCancel(enemyDuelGamesCtx)
 
 	gm := &EnemyDuelGame{
-		GameID: gameID,
-		ctx:    ctx,
-		cancel: cancel,
+		GameID:   gameID,
+		ctx:      ctx,
+		cancel:   cancel,
+		sessions: make(map[*session.Session]*SessionGameStatus),
 	}
 
 	gm.SetState(&EnemyDuelGameEntryState{Base: EnemyDuelGameBaseState{EnemyDuel: gm}})
@@ -198,6 +201,13 @@ func (gm *EnemyDuelGame) Stop() {
 
 		gm.wg.Wait()
 	})
+}
+
+func (gm *EnemyDuelGame) AddSession(s *session.Session, g *SessionGameStatus) {
+	gm.sessionsMu.Lock()
+	defer gm.sessionsMu.Unlock()
+
+	gm.sessions[s] = g
 }
 
 func HandleSessionMessage(s *session.Session, g *SessionGameStatus, c contract.Content) {
