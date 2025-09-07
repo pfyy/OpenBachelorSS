@@ -51,6 +51,10 @@ func (s *Session) setReadErr(err error) {
 	if s.readErr != nil {
 		return
 	}
+	cfg := config.Get()
+	if cfg.Server.Debug {
+		log.Printf("%+v readErr: err %v", s.conn.RemoteAddr(), err)
+	}
 	s.readErr = err
 }
 
@@ -91,6 +95,10 @@ func (s *Session) setWriteErr(err error) {
 	defer s.errMu.Unlock()
 	if s.writeErr != nil {
 		return
+	}
+	cfg := config.Get()
+	if cfg.Server.Debug {
+		log.Printf("%+v writeErr: err %v", s.conn.RemoteAddr(), err)
 	}
 	s.writeErr = err
 }
