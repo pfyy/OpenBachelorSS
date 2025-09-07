@@ -32,7 +32,8 @@ func handleConnection(ctx context.Context, conn net.Conn, h *hub.Hub, wg *sync.W
 
 	s := session.NewSession(ctx, tcpConn)
 	s.Start()
-	defer s.Close()
+
+	h.AddSession(s)
 }
 
 func mainLoop(ctx context.Context, h *hub.Hub) error {

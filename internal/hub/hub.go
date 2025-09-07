@@ -3,6 +3,8 @@ package hub
 import (
 	"context"
 	"sync"
+
+	"github.com/OpenBachelor/OpenBachelorSS/internal/session"
 )
 
 type Hub struct {
@@ -44,4 +46,8 @@ func (h *Hub) IsClosed() bool {
 	default:
 		return false
 	}
+}
+
+func (h *Hub) AddSession(s *session.Session) {
+
 }
