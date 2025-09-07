@@ -211,5 +211,7 @@ func (gm *EnemyDuelGame) AddSession(s *session.Session, g *SessionGameStatus) {
 }
 
 func HandleSessionMessage(s *session.Session, g *SessionGameStatus, c contract.Content) {
-
+	if msg, ok := c.(*contract.C2SEnemyDuelHeartBeatMessage); ok {
+		s.SendMessage(contract.NewS2CEnemyDuelHeartBeatMessage(msg.Seq, msg.Time))
+	}
 }
