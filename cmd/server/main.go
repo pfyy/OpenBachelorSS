@@ -43,14 +43,17 @@ func mainLoop(ctx context.Context, h *hub.Hub) error {
 		return fmt.Errorf("failed to listen: %w", err)
 	}
 
+	var wg sync.WaitGroup
+
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
+
 		<-ctx.Done()
 		if err := listener.Close(); err != nil {
 			log.Printf("failed to close listener: %v", err)
 		}
 	}()
-
-	var wg sync.WaitGroup
 
 	for {
 		conn, err := listener.Accept()
@@ -77,6 +80,8 @@ func main() {
 	defer stop()
 
 	h := hub.NewHub(ctx)
+	h.Start()
+	defer h.Close()
 
 	err := mainLoop(ctx, h)
 
