@@ -106,11 +106,12 @@ type EnemyDuelGameFinishState struct {
 }
 
 type EnemyDuelGame struct {
-	GameID string
-	state  EnemyDuelGameState
-	wg     sync.WaitGroup
-	ctx    context.Context
-	cancel context.CancelFunc
+	GameID   string
+	state    EnemyDuelGameState
+	wg       sync.WaitGroup
+	ctx      context.Context
+	cancel   context.CancelFunc
+	stopOnce sync.Once
 }
 
 func NewEnemyDuelGame(gameID string) *EnemyDuelGame {
@@ -147,9 +148,11 @@ func (gm *EnemyDuelGame) Run() {
 }
 
 func (gm *EnemyDuelGame) Stop() {
-	gm.cancel()
+	gm.stopOnce.Do(func() {
+		gm.cancel()
 
-	gm.wg.Wait()
+		gm.wg.Wait()
+	})
 }
 
 func HandleSessionMessage(s *session.Session, g *SessionGameStatus, c contract.Content) {
