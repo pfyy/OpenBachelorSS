@@ -86,16 +86,16 @@ func (h *Hub) closeSessions() {
 	}
 }
 
-func (h *Hub) addSession(s *session.Session) error {
-	gameStatus := &game.SessionGameStatus{}
+func (h *Hub) addSession(s *session.Session) (*game.SessionGameStatus, error) {
+	g := &game.SessionGameStatus{}
 
 	h.sessionsMu.Lock()
 	defer h.sessionsMu.Unlock()
 	if h.noNewSession {
-		return fmt.Errorf("no new session")
+		return nil, fmt.Errorf("no new session")
 	}
-	h.sessions[s] = gameStatus
-	return nil
+	h.sessions[s] = g
+	return g, nil
 }
 
 func (h *Hub) removeSession(s *session.Session) {
@@ -109,13 +109,22 @@ func (h *Hub) removeSession(s *session.Session) {
 	delete(h.sessions, s)
 }
 
+func (h *Hub) readSession(s *session.Session, g *game.SessionGameStatus) {
+	defer h.wg.Done()
+
+	for c := range s.Recv() {
+		game.HandleSessionMessage(s, g, c)
+	}
+}
+
 func (h *Hub) AddSession(s *session.Session) error {
-	err := h.addSession(s)
+	g, err := h.addSession(s)
 	if err != nil {
 		return err
 	}
 
-	h.wg.Add(1)
+	h.wg.Add(2)
+	go h.readSession(s, g)
 	go h.removeSession(s)
 
 	return nil
