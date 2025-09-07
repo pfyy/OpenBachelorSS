@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/OpenBachelor/OpenBachelorSS/internal/session"
 	"github.com/OpenBachelor/OpenBachelorSS/pkg/contract"
@@ -14,19 +15,19 @@ type SessionGameStatus struct {
 }
 
 var (
-	enemyDuelGamesMu   sync.Mutex
-	enemyDuelGames     = make(map[string]*EnemyDuelGame)
-	noNewEnemyDuelGame bool
-	ctx                context.Context
-	cancel             context.CancelFunc
+	enemyDuelGamesMu     sync.Mutex
+	enemyDuelGames       = make(map[string]*EnemyDuelGame)
+	noNewEnemyDuelGame   bool
+	enemyDuelGamesCtx    context.Context
+	enemyDuelGamesCancel context.CancelFunc
 )
 
 func SetEnemyDuelGameCtx(parentCtx context.Context) {
-	ctx, cancel = context.WithCancel(parentCtx)
+	enemyDuelGamesCtx, enemyDuelGamesCancel = context.WithCancel(parentCtx)
 }
 
 func StopEnemyDuelGame() {
-	cancel()
+	enemyDuelGamesCancel()
 
 	setNoNewGame()
 
@@ -107,10 +108,48 @@ type EnemyDuelGameFinishState struct {
 type EnemyDuelGame struct {
 	GameID string
 	state  EnemyDuelGameState
+	wg     sync.WaitGroup
+	ctx    context.Context
+	cancel context.CancelFunc
+}
+
+func NewEnemyDuelGame(gameID string) *EnemyDuelGame {
+	ctx, cancel := context.WithCancel(enemyDuelGamesCtx)
+
+	gm := &EnemyDuelGame{
+		GameID: gameID,
+		ctx:    ctx,
+		cancel: cancel,
+	}
+
+	return gm
+}
+
+func (gm *EnemyDuelGame) Run() {
+	gm.wg.Add(1)
+
+	go func() {
+		defer gm.wg.Done()
+
+		ticker := time.NewTicker(100 * time.Millisecond)
+
+		for {
+			select {
+			case <-ticker.C:
+				if gm.state != nil {
+					gm.state.Update()
+				}
+			case <-gm.ctx.Done():
+				return
+			}
+		}
+	}()
 }
 
 func (gm *EnemyDuelGame) Stop() {
+	gm.cancel()
 
+	gm.wg.Wait()
 }
 
 func HandleSessionMessage(s *session.Session, g *SessionGameStatus, c contract.Content) {
