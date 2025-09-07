@@ -65,6 +65,7 @@ func (s *Session) readLoop() {
 	defer close(s.recv)
 
 	for {
+		// this line is still blocking on windows even if CloseRead() is called, fuck windows
 		content, err := contract.ReadContent(s.conn)
 		if err == io.EOF {
 			return
