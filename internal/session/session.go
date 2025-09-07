@@ -70,10 +70,16 @@ func (s *Session) readLoop() {
 	}
 	readResultChan := make(chan ReadResult)
 	go func() {
-		// this line is still blocking on windows even if CloseRead() is called, fuck windows
-		content, err := contract.ReadContent(s.conn)
+		for {
+			// this line is still blocking on windows even if CloseRead() is called, fuck windows
+			content, err := contract.ReadContent(s.conn)
 
-		readResultChan <- ReadResult{content: content, err: err}
+			readResultChan <- ReadResult{content: content, err: err}
+
+			if err != nil {
+				return
+			}
+		}
 	}()
 
 	for {
