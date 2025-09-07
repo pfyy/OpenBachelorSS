@@ -41,6 +41,8 @@ func (h *Hub) Close() {
 
 		h.setNoNewSession()
 
+		h.closeSessions()
+
 		h.wg.Wait()
 
 		close(h.done)
@@ -61,6 +63,27 @@ func (h *Hub) setNoNewSession() {
 	defer h.sessionsMu.Unlock()
 
 	h.noNewSession = true
+}
+
+func (h *Hub) getSessions() []*session.Session {
+	h.sessionsMu.Lock()
+	defer h.sessionsMu.Unlock()
+
+	sessions := make([]*session.Session, 0, len(h.sessions))
+
+	for s := range h.sessions {
+		sessions = append(sessions, s)
+	}
+
+	return sessions
+}
+
+func (h *Hub) closeSessions() {
+	sessions := h.getSessions()
+
+	for _, s := range sessions {
+		s.Close()
+	}
 }
 
 func (h *Hub) addSession(s *session.Session) error {
