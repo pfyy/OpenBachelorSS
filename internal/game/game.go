@@ -187,8 +187,6 @@ func (gm *EnemyDuelGame) Stop() {
 		gm.cancel()
 
 		gm.wg.Wait()
-
-		unregisterGame(gm)
 	})
 }
 
