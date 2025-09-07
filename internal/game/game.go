@@ -5,9 +5,23 @@ import (
 	"github.com/OpenBachelor/OpenBachelorSS/pkg/contract"
 )
 
-type SessionGameStatus struct{}
+type SessionGameStatus struct {
+	EnemyDuel *EnemyDuelGame
+}
 
-type EnemyDuelGame struct{}
+type EnemyDuelGameState interface {
+	OnEnter()
+	OnExit()
+	Update()
+}
+
+type EnemyDuelGameBaseState struct {
+	EnemyDuel *EnemyDuelGame
+}
+
+type EnemyDuelGame struct {
+	state EnemyDuelGameState
+}
 
 func HandleSessionMessage(s *session.Session, g *SessionGameStatus, c contract.Content) {
 
