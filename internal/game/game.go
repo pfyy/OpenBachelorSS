@@ -2,6 +2,7 @@ package game
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"github.com/OpenBachelor/OpenBachelorSS/internal/session"
@@ -13,10 +14,11 @@ type SessionGameStatus struct {
 }
 
 var (
-	enemyDuelGamesMu sync.Mutex
-	enemyDuelGames   = make(map[string]*EnemyDuelGame)
-	ctx              context.Context
-	cancel           context.CancelFunc
+	enemyDuelGamesMu   sync.Mutex
+	enemyDuelGames     = make(map[string]*EnemyDuelGame)
+	noNewEnemyDuelGame bool
+	ctx                context.Context
+	cancel             context.CancelFunc
 )
 
 func SetEnemyDuelGameCtx(parentCtx context.Context) {
@@ -25,6 +27,51 @@ func SetEnemyDuelGameCtx(parentCtx context.Context) {
 
 func StopEnemyDuelGame() {
 	cancel()
+
+	setNoNewGame()
+
+	stopEnemyDuelGame()
+}
+
+func setNoNewGame() {
+	enemyDuelGamesMu.Lock()
+	defer enemyDuelGamesMu.Unlock()
+
+	noNewEnemyDuelGame = true
+}
+
+func registerGame(game *EnemyDuelGame) error {
+	enemyDuelGamesMu.Lock()
+	defer enemyDuelGamesMu.Unlock()
+
+	if noNewEnemyDuelGame {
+		return fmt.Errorf("no new game")
+	}
+
+	enemyDuelGames[game.GameID] = game
+
+	return nil
+}
+
+func getEnemyDuelGamesSlice() []*EnemyDuelGame {
+	enemyDuelGamesMu.Lock()
+	defer enemyDuelGamesMu.Unlock()
+
+	enemyDuelGamesSlice := make([]*EnemyDuelGame, 0, len(enemyDuelGames))
+
+	for _, game := range enemyDuelGames {
+		enemyDuelGamesSlice = append(enemyDuelGamesSlice, game)
+	}
+
+	return enemyDuelGamesSlice
+}
+
+func stopEnemyDuelGame() {
+	enemyDuelGamesSlice := getEnemyDuelGamesSlice()
+
+	for _, game := range enemyDuelGamesSlice {
+		game.Stop()
+	}
 }
 
 type EnemyDuelGameState interface {
@@ -58,7 +105,12 @@ type EnemyDuelGameFinishState struct {
 }
 
 type EnemyDuelGame struct {
-	state EnemyDuelGameState
+	GameID string
+	state  EnemyDuelGameState
+}
+
+func (gm *EnemyDuelGame) Stop() {
+
 }
 
 func HandleSessionMessage(s *session.Session, g *SessionGameStatus, c contract.Content) {
