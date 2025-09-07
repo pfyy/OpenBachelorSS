@@ -186,11 +186,6 @@ func (s *Session) Start() {
 	s.wg.Add(2)
 	go s.readLoop()
 	go s.writeLoop()
-
-	go func() {
-		<-s.ctx.Done()
-		s.Close()
-	}()
 }
 
 func (s *Session) Close() {

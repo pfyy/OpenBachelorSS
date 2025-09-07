@@ -23,10 +23,7 @@ func NewHub(parentCtx context.Context) *Hub {
 }
 
 func (h *Hub) Start() {
-	go func() {
-		<-h.ctx.Done()
-		h.Close()
-	}()
+
 }
 
 func (h *Hub) Close() {
