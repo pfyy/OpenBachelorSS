@@ -29,6 +29,7 @@ type Session struct {
 	readErr   error
 	writeErr  error
 	closeOnce sync.Once
+	done      chan struct{}
 }
 
 const sessionChanSize = 1024
@@ -42,6 +43,7 @@ func NewSession(parentCtx context.Context, conn Conn) *Session {
 		recv:   make(chan contract.Content, sessionChanSize),
 		ctx:    ctx,
 		cancel: cancel,
+		done:   make(chan struct{}),
 	}
 }
 
@@ -200,5 +202,16 @@ func (s *Session) Close() {
 		s.wg.Wait()
 
 		s.conn.Close()
+
+		close(s.done)
 	})
+}
+
+func (s *Session) IsClosed() bool {
+	select {
+	case <-s.done:
+		return true
+	default:
+		return false
+	}
 }
