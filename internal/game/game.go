@@ -135,6 +135,14 @@ func NewEnemyDuelGame(gameID string) *EnemyDuelGame {
 	return gm
 }
 
+func (gm *EnemyDuelGame) SetState(newState EnemyDuelGameState) {
+	if gm.state != nil {
+		gm.state.OnExit()
+	}
+	gm.state = newState
+	gm.state.OnEnter()
+}
+
 func (gm *EnemyDuelGame) Run() {
 	gm.wg.Add(1)
 
