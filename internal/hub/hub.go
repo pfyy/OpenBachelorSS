@@ -39,6 +39,8 @@ func (h *Hub) Close() {
 	h.closeOnce.Do(func() {
 		h.cancel()
 
+		h.setNoNewSession()
+
 		h.wg.Wait()
 
 		close(h.done)
@@ -52,6 +54,13 @@ func (h *Hub) IsClosed() bool {
 	default:
 		return false
 	}
+}
+
+func (h *Hub) setNoNewSession() {
+	h.sessionsMu.Lock()
+	defer h.sessionsMu.Unlock()
+
+	h.noNewSession = true
 }
 
 func (h *Hub) addSession(s *session.Session) error {
