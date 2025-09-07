@@ -33,7 +33,10 @@ func handleConnection(ctx context.Context, conn net.Conn, h *hub.Hub, wg *sync.W
 	s := session.NewSession(ctx, tcpConn)
 	s.Start()
 
-	h.AddSession(s)
+	err := h.AddSession(s)
+	if err != nil {
+		log.Printf("failed to add session: %v", err)
+	}
 }
 
 func mainLoop(ctx context.Context, h *hub.Hub) error {

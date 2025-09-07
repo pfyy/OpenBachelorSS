@@ -2,17 +2,22 @@ package hub
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
+	"github.com/OpenBachelor/OpenBachelorSS/internal/game"
 	"github.com/OpenBachelor/OpenBachelorSS/internal/session"
 )
 
 type Hub struct {
-	ctx       context.Context
-	cancel    context.CancelFunc
-	wg        sync.WaitGroup
-	closeOnce sync.Once
-	done      chan struct{}
+	sessionsMu   sync.Mutex
+	sessions     map[*session.Session]*game.SessionGameStatus
+	noNewSession bool
+	ctx          context.Context
+	cancel       context.CancelFunc
+	wg           sync.WaitGroup
+	closeOnce    sync.Once
+	done         chan struct{}
 }
 
 func NewHub(parentCtx context.Context) *Hub {
@@ -48,6 +53,23 @@ func (h *Hub) IsClosed() bool {
 	}
 }
 
-func (h *Hub) AddSession(s *session.Session) {
+func (h *Hub) addSession(s *session.Session) error {
+	gameStatus := &game.SessionGameStatus{}
 
+	h.sessionsMu.Lock()
+	defer h.sessionsMu.Unlock()
+	if h.noNewSession {
+		return fmt.Errorf("no new session")
+	}
+	h.sessions[s] = gameStatus
+	return nil
+}
+
+func (h *Hub) AddSession(s *session.Session) error {
+	err := h.addSession(s)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
