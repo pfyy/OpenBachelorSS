@@ -24,9 +24,10 @@ func NewHub(parentCtx context.Context) *Hub {
 	ctx, cancel := context.WithCancel(parentCtx)
 
 	return &Hub{
-		ctx:    ctx,
-		cancel: cancel,
-		done:   make(chan struct{}),
+		sessions: make(map[*session.Session]*game.SessionGameStatus),
+		ctx:      ctx,
+		cancel:   cancel,
+		done:     make(chan struct{}),
 	}
 }
 
