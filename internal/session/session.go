@@ -155,8 +155,6 @@ func (s *Session) SendMessage(content contract.Content) error {
 
 	default:
 		err := fmt.Errorf("misbehaving client")
-		s.setWriteErr(err)
-		s.Close()
 		return err
 	}
 
