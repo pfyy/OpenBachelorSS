@@ -2,6 +2,7 @@ package session
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net"
 	"sync"
@@ -140,6 +141,20 @@ func (s *Session) Send() chan<- contract.Content {
 
 func (s *Session) Recv() <-chan contract.Content {
 	return s.recv
+}
+
+func (s *Session) SendMessage(content contract.Content) error {
+	select {
+	case s.send <- content:
+
+	default:
+		err := fmt.Errorf("misbehaving client")
+		s.setWriteErr(err)
+		s.Close()
+		return err
+	}
+
+	return nil
 }
 
 func (s *Session) Start() {
