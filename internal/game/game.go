@@ -309,6 +309,7 @@ func HandleSessionMessage(s *session.Session, g *SessionGameStatus, c contract.C
 		}
 
 		game.AddSession(s, g)
+		g.EnemyDuel = game
 
 		return
 	}
