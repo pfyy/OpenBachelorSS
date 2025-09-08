@@ -157,16 +157,17 @@ type EnemyDuelGameFinishState struct {
 }
 
 type EnemyDuelGame struct {
-	GameID     string
-	ModeID     string
-	StageID    string
-	state      EnemyDuelGameState
-	wg         sync.WaitGroup
-	ctx        context.Context
-	cancel     context.CancelFunc
-	stopOnce   sync.Once
-	sessionsMu sync.Mutex
-	sessions   map[*session.Session]*SessionGameStatus
+	GameID         string
+	ModeID         string
+	StageID        string
+	state          EnemyDuelGameState
+	wg             sync.WaitGroup
+	ctx            context.Context
+	cancel         context.CancelFunc
+	stopOnce       sync.Once
+	sessionsMu     sync.Mutex
+	sessions       map[*session.Session]*SessionGameStatus
+	playerStatusMu sync.Mutex
 }
 
 func NewEnemyDuelGame(gameID string, modeID string, stageID string) *EnemyDuelGame {
