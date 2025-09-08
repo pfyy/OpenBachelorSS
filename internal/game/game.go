@@ -12,8 +12,12 @@ import (
 	"github.com/OpenBachelor/OpenBachelorSS/pkg/contract"
 )
 
+type EnemyDuelGamePlayerStatus struct {
+}
+
 type SessionGameStatus struct {
-	EnemyDuel *EnemyDuelGame
+	EnemyDuel                 *EnemyDuelGame
+	EnemyDuelGamePlayerStatus EnemyDuelGamePlayerStatus
 }
 
 var (
