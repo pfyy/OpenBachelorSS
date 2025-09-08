@@ -3,6 +3,8 @@ package game
 import (
 	"context"
 	"fmt"
+	"log"
+	"strings"
 	"sync"
 	"time"
 
@@ -49,6 +51,10 @@ func registerGame(game *EnemyDuelGame) error {
 		return fmt.Errorf("no new game")
 	}
 
+	if _, ok := enemyDuelGames[game.GameID]; ok {
+		return fmt.Errorf("game already exist")
+	}
+
 	enemyDuelGames[game.GameID] = game
 
 	game.wg.Add(1)
@@ -68,6 +74,17 @@ func unregisterGame(game *EnemyDuelGame) error {
 	defer enemyDuelGamesMu.Unlock()
 
 	delete(enemyDuelGames, game.GameID)
+
+	return nil
+}
+
+func getGame(gameID string) *EnemyDuelGame {
+	enemyDuelGamesMu.Lock()
+	defer enemyDuelGamesMu.Unlock()
+
+	if game, ok := enemyDuelGames[gameID]; ok {
+		return game
+	}
 
 	return nil
 }
@@ -137,6 +154,8 @@ type EnemyDuelGameFinishState struct {
 
 type EnemyDuelGame struct {
 	GameID     string
+	ModeID     string
+	StageID    string
 	state      EnemyDuelGameState
 	wg         sync.WaitGroup
 	ctx        context.Context
@@ -146,11 +165,13 @@ type EnemyDuelGame struct {
 	sessions   map[*session.Session]*SessionGameStatus
 }
 
-func NewEnemyDuelGame(gameID string) *EnemyDuelGame {
+func NewEnemyDuelGame(gameID string, modeID string, stageID string) *EnemyDuelGame {
 	ctx, cancel := context.WithCancel(enemyDuelGamesCtx)
 
 	gm := &EnemyDuelGame{
 		GameID:   gameID,
+		ModeID:   modeID,
+		StageID:  stageID,
 		ctx:      ctx,
 		cancel:   cancel,
 		sessions: make(map[*session.Session]*SessionGameStatus),
@@ -210,8 +231,56 @@ func (gm *EnemyDuelGame) AddSession(s *session.Session, g *SessionGameStatus) {
 	gm.sessions[s] = g
 }
 
+func getModeIDStageID(teamToken string) (string, string, error) {
+	parts := strings.Split(teamToken, "|")
+
+	if len(parts) < 2 {
+		return "", "", fmt.Errorf("invalid teamToken")
+	}
+
+	modeID, stageID := parts[0], parts[1]
+
+	return modeID, stageID, nil
+}
+
+func getOrCreateGame(gameID string, modeID string, stageID string) *EnemyDuelGame {
+	game := getGame(gameID)
+	if game == nil {
+		game = NewEnemyDuelGame(gameID, modeID, stageID)
+		err := registerGame(game)
+		if err == nil {
+			game.Run()
+		} else {
+			log.Printf("failed to register game: %v", err)
+			game = getGame(gameID)
+		}
+	}
+
+	return game
+}
+
 func HandleSessionMessage(s *session.Session, g *SessionGameStatus, c contract.Content) {
 	if msg, ok := c.(*contract.C2SEnemyDuelHeartBeatMessage); ok {
 		s.SendMessage(contract.NewS2CEnemyDuelHeartBeatMessage(msg.Seq, msg.Time))
+		return
+	}
+
+	if msg, ok := c.(*contract.C2SEnemyDuelTeamJoinMessage); ok {
+		modeID, stageID, err := getModeIDStageID(msg.TeamToken)
+		if err != nil {
+			log.Printf("failed to get modeID, stageID: %v", err)
+			return
+		}
+
+		gameID := strings.Join([]string{msg.TeamID, modeID, stageID}, "|")
+
+		game := getOrCreateGame(gameID, modeID, stageID)
+
+		if game == nil {
+			log.Printf("failed to get or create game")
+			return
+		}
+
+		return
 	}
 }
