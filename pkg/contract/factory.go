@@ -23,3 +23,7 @@ func NewS2CEnemyDuelTeamStatusMessage(sceneID string, token string) *S2CEnemyDue
 	cfg := config.Get()
 	return &S2CEnemyDuelTeamStatusMessage{State: 3, Address: cfg.Server.Addr, SceneID: sceneID, Token: token}
 }
+
+func NewS2CEnemyDuelEndMessage() *S2CEnemyDuelEndMessage {
+	return &S2CEnemyDuelEndMessage{}
+}
