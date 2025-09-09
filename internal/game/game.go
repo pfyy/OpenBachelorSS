@@ -499,6 +499,7 @@ func HandleSessionMessage(s *session.Session, g *SessionGameStatus, c contract.C
 	if msg, ok := c.(*contract.C2SEnemyDuelJoinMessage); ok {
 		modeID, stageID, err := getModeIDStageID(msg.Token)
 		if err != nil {
+			defer s.SendMessage(contract.NewS2CEnemyDuelQuitMessage())
 			log.Printf("failed to get modeID, stageID: %v", err)
 			return
 		}
@@ -507,6 +508,7 @@ func HandleSessionMessage(s *session.Session, g *SessionGameStatus, c contract.C
 
 		game := getGame(gameID)
 		if game == nil {
+			defer s.SendMessage(contract.NewS2CEnemyDuelQuitMessage())
 			log.Printf("game not found")
 			return
 		}
