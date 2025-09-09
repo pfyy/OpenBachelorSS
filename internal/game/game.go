@@ -13,10 +13,11 @@ import (
 )
 
 type EnemyDuelGamePlayerStatus struct {
-	Money  uint32
-	Side   uint8
-	AllIn  uint8
-	Streak uint8
+	Money       uint32
+	ShieldState uint8
+	Side        uint8
+	AllIn       uint8
+	Streak      uint8
 }
 
 type SessionGameStatus struct {
