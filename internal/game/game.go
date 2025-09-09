@@ -135,11 +135,11 @@ func (b *EnemyDuelGameStateBase) SetEnterTime() {
 }
 
 type EnemyDuelGameWaitingState struct {
-	Base EnemyDuelGameStateBase
+	EnemyDuelGameStateBase
 }
 
 func (s *EnemyDuelGameWaitingState) OnEnter() {
-	s.Base.SetEnterTime()
+	s.SetEnterTime()
 }
 
 func (s *EnemyDuelGameWaitingState) OnExit() {
@@ -151,11 +151,11 @@ func (s *EnemyDuelGameWaitingState) Update() {
 }
 
 type EnemyDuelGameEntryState struct {
-	Base EnemyDuelGameStateBase
+	EnemyDuelGameStateBase
 }
 
 func (s *EnemyDuelGameEntryState) OnEnter() {
-	s.Base.SetEnterTime()
+	s.SetEnterTime()
 }
 
 func (s *EnemyDuelGameEntryState) OnExit() {
@@ -167,11 +167,11 @@ func (s *EnemyDuelGameEntryState) Update() {
 }
 
 type EnemyDuelGameBetState struct {
-	Base EnemyDuelGameStateBase
+	EnemyDuelGameStateBase
 }
 
 func (s *EnemyDuelGameBetState) OnEnter() {
-	s.Base.SetEnterTime()
+	s.SetEnterTime()
 }
 
 func (s *EnemyDuelGameBetState) OnExit() {
@@ -183,11 +183,11 @@ func (s *EnemyDuelGameBetState) Update() {
 }
 
 type EnemyDuelGameBattleState struct {
-	Base EnemyDuelGameStateBase
+	EnemyDuelGameStateBase
 }
 
 func (s *EnemyDuelGameBattleState) OnEnter() {
-	s.Base.SetEnterTime()
+	s.SetEnterTime()
 }
 
 func (s *EnemyDuelGameBattleState) OnExit() {
@@ -199,11 +199,11 @@ func (s *EnemyDuelGameBattleState) Update() {
 }
 
 type EnemyDuelGameSettleState struct {
-	Base EnemyDuelGameStateBase
+	EnemyDuelGameStateBase
 }
 
 func (s *EnemyDuelGameSettleState) OnEnter() {
-	s.Base.SetEnterTime()
+	s.SetEnterTime()
 }
 
 func (s *EnemyDuelGameSettleState) OnExit() {
@@ -215,11 +215,11 @@ func (s *EnemyDuelGameSettleState) Update() {
 }
 
 type EnemyDuelGameFinishState struct {
-	Base EnemyDuelGameStateBase
+	EnemyDuelGameStateBase
 }
 
 func (s *EnemyDuelGameFinishState) OnEnter() {
-	s.Base.SetEnterTime()
+	s.SetEnterTime()
 }
 
 func (s *EnemyDuelGameFinishState) OnExit() {
@@ -255,7 +255,7 @@ func NewEnemyDuelGame(gameID string, modeID string, stageID string) *EnemyDuelGa
 		sessions: make(map[*session.Session]*SessionGameStatus),
 	}
 
-	gm.SetState(&EnemyDuelGameWaitingState{Base: EnemyDuelGameStateBase{EnemyDuel: gm}})
+	gm.SetState(&EnemyDuelGameWaitingState{EnemyDuelGameStateBase: EnemyDuelGameStateBase{EnemyDuel: gm}})
 
 	return gm
 }
