@@ -86,6 +86,8 @@ func unregisterGame(game *EnemyDuelGame) error {
 
 	delete(enemyDuelGames, game.GameID)
 
+	log.Printf("num of active game: %d", len(enemyDuelGames))
+
 	return nil
 }
 

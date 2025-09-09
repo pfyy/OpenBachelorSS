@@ -3,6 +3,7 @@ package hub
 import (
 	"context"
 	"fmt"
+	"log"
 	"sync"
 	"time"
 
@@ -137,6 +138,8 @@ func (h *Hub) removeSession(s *session.Session) {
 	defer h.sessionsMu.Unlock()
 
 	delete(h.sessions, s)
+
+	log.Printf("num of active session: %d", len(h.sessions))
 }
 
 func (h *Hub) readSession(s *session.Session, g *game.SessionGameStatus) {
