@@ -55,3 +55,7 @@ func NewS2CEnemyDuelStepMessage(step uint32, round uint8) *S2CEnemyDuelStepMessa
 		Round:    round,
 	}
 }
+
+func NewS2CEnemyDuelQuitMessage() *S2CEnemyDuelQuitMessage {
+	return &S2CEnemyDuelQuitMessage{}
+}

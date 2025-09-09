@@ -466,6 +466,11 @@ func HandleSessionMessage(s *session.Session, g *SessionGameStatus, c contract.C
 		return
 	}
 
+	if _, ok := c.(*contract.C2SEnemyDuelQuitMessage); ok {
+		s.SendMessage(contract.NewS2CEnemyDuelQuitMessage())
+		return
+	}
+
 	if msg, ok := c.(*contract.C2SEnemyDuelTeamJoinMessage); ok {
 		defer s.SendMessage(contract.NewS2CEnemyDuelKickMessage())
 
