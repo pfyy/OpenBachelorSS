@@ -1,6 +1,8 @@
 package contract
 
 import (
+	"time"
+
 	"github.com/OpenBachelor/OpenBachelorSS/internal/config"
 )
 
@@ -39,8 +41,8 @@ func NewS2CEnemyDuelJoinMessage(stageID string) *S2CEnemyDuelJoinMessage {
 	}
 }
 
-func NewS2CEnemyDuelClientStateMessage(state uint8, round uint8, forceEndTs int64) *S2CEnemyDuelClientStateMessage {
-	return &S2CEnemyDuelClientStateMessage{State: state, Round: round, ForceEndTs: uint64(forceEndTs)}
+func NewS2CEnemyDuelClientStateMessage(state uint8, round uint8, forceEndTs time.Time) *S2CEnemyDuelClientStateMessage {
+	return &S2CEnemyDuelClientStateMessage{State: state, Round: round, ForceEndTs: uint64(forceEndTs.Unix())}
 }
 
 func NewC2SEnemyDuelFinalSettleMessage() *C2SEnemyDuelFinalSettleMessage {

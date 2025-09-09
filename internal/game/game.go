@@ -127,16 +127,16 @@ type EnemyDuelGameState interface {
 
 type EnemyDuelGameStateBase struct {
 	EnemyDuel     *EnemyDuelGame
-	EnterTime     int64
-	ForceExitTime int64
+	EnterTime     time.Time
+	ForceExitTime time.Time
 }
 
 func (b *EnemyDuelGameStateBase) SetEnterTime() {
-	b.EnterTime = time.Now().Unix()
+	b.EnterTime = time.Now()
 }
 
-func (b *EnemyDuelGameStateBase) SetForceExitTime(maxDuration int64) {
-	b.ForceExitTime = b.EnterTime + maxDuration
+func (b *EnemyDuelGameStateBase) SetForceExitTime(maxDuration time.Duration) {
+	b.ForceExitTime = b.EnterTime.Add(maxDuration)
 }
 
 type EnemyDuelGameWaitingState struct {
@@ -145,7 +145,7 @@ type EnemyDuelGameWaitingState struct {
 
 func (s *EnemyDuelGameWaitingState) OnEnter() {
 	s.SetEnterTime()
-	s.SetForceExitTime(30)
+	s.SetForceExitTime(30 * time.Second)
 }
 
 func (s *EnemyDuelGameWaitingState) OnExit() {
@@ -153,9 +153,9 @@ func (s *EnemyDuelGameWaitingState) OnExit() {
 }
 
 func (s *EnemyDuelGameWaitingState) Update() {
-	currentTime := time.Now().Unix()
+	currentTime := time.Now()
 
-	if currentTime > s.ForceExitTime {
+	if currentTime.After(s.ForceExitTime) {
 		s.EnemyDuel.SetState(&EnemyDuelGameEntryState{EnemyDuelGameStateBase: EnemyDuelGameStateBase{EnemyDuel: s.EnemyDuel}})
 		return
 	}
@@ -167,7 +167,7 @@ type EnemyDuelGameEntryState struct {
 
 func (s *EnemyDuelGameEntryState) OnEnter() {
 	s.SetEnterTime()
-	s.SetForceExitTime(3)
+	s.SetForceExitTime(3 * time.Second)
 
 	s.EnemyDuel.clearStep()
 
@@ -183,9 +183,9 @@ func (s *EnemyDuelGameEntryState) OnExit() {
 }
 
 func (s *EnemyDuelGameEntryState) Update() {
-	currentTime := time.Now().Unix()
+	currentTime := time.Now()
 
-	if currentTime > s.ForceExitTime {
+	if currentTime.After(s.ForceExitTime) {
 		s.EnemyDuel.SetState(&EnemyDuelGameBetState{EnemyDuelGameStateBase: EnemyDuelGameStateBase{EnemyDuel: s.EnemyDuel}})
 		return
 	}
@@ -199,7 +199,7 @@ type EnemyDuelGameBetState struct {
 
 func (s *EnemyDuelGameBetState) OnEnter() {
 	s.SetEnterTime()
-	s.SetForceExitTime(20)
+	s.SetForceExitTime(20 * time.Second)
 
 	sessions := s.EnemyDuel.getSessions()
 
@@ -213,9 +213,9 @@ func (s *EnemyDuelGameBetState) OnExit() {
 }
 
 func (s *EnemyDuelGameBetState) Update() {
-	currentTime := time.Now().Unix()
+	currentTime := time.Now()
 
-	if currentTime > s.ForceExitTime {
+	if currentTime.After(s.ForceExitTime) {
 		s.EnemyDuel.SetState(&EnemyDuelGameBattleState{EnemyDuelGameStateBase: EnemyDuelGameStateBase{EnemyDuel: s.EnemyDuel}})
 		return
 	}
@@ -227,7 +227,7 @@ type EnemyDuelGameBattleState struct {
 
 func (s *EnemyDuelGameBattleState) OnEnter() {
 	s.SetEnterTime()
-	s.SetForceExitTime(150)
+	s.SetForceExitTime(150 * time.Second)
 
 	sessions := s.EnemyDuel.getSessions()
 
@@ -241,9 +241,9 @@ func (s *EnemyDuelGameBattleState) OnExit() {
 }
 
 func (s *EnemyDuelGameBattleState) Update() {
-	currentTime := time.Now().Unix()
+	currentTime := time.Now()
 
-	if currentTime > s.ForceExitTime {
+	if currentTime.After(s.ForceExitTime) {
 		s.EnemyDuel.SetState(&EnemyDuelGameSettleState{EnemyDuelGameStateBase: EnemyDuelGameStateBase{EnemyDuel: s.EnemyDuel}})
 		return
 	}
@@ -257,7 +257,7 @@ type EnemyDuelGameSettleState struct {
 
 func (s *EnemyDuelGameSettleState) OnEnter() {
 	s.SetEnterTime()
-	s.SetForceExitTime(10)
+	s.SetForceExitTime(10 * time.Second)
 
 	sessions := s.EnemyDuel.getSessions()
 
@@ -271,9 +271,9 @@ func (s *EnemyDuelGameSettleState) OnExit() {
 }
 
 func (s *EnemyDuelGameSettleState) Update() {
-	currentTime := time.Now().Unix()
+	currentTime := time.Now()
 
-	if currentTime > s.ForceExitTime {
+	if currentTime.After(s.ForceExitTime) {
 		maxRound := s.EnemyDuel.getMaxRound()
 		if s.EnemyDuel.round+1 >= maxRound {
 			s.EnemyDuel.SetState(&EnemyDuelGameFinishState{EnemyDuelGameStateBase: EnemyDuelGameStateBase{EnemyDuel: s.EnemyDuel}})
@@ -292,7 +292,7 @@ type EnemyDuelGameFinishState struct {
 
 func (s *EnemyDuelGameFinishState) OnEnter() {
 	s.SetEnterTime()
-	s.SetForceExitTime(10)
+	s.SetForceExitTime(10 * time.Second)
 
 	sessions := s.EnemyDuel.getSessions()
 
