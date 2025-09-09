@@ -157,6 +157,7 @@ func (s *EnemyDuelGameWaitingState) Update() {
 	currentTime := time.Now()
 
 	if currentTime.After(s.ForceExitTime) {
+		s.EnemyDuel.setNoNewSession()
 		s.EnemyDuel.SetState(&EnemyDuelGameEntryState{EnemyDuelGameStateBase: EnemyDuelGameStateBase{EnemyDuel: s.EnemyDuel}})
 		return
 	}
@@ -319,18 +320,19 @@ func (s *EnemyDuelGameFinishState) Update() {
 }
 
 type EnemyDuelGame struct {
-	GameID     string
-	ModeID     string
-	StageID    string
-	state      EnemyDuelGameState
-	wg         sync.WaitGroup
-	ctx        context.Context
-	cancel     context.CancelFunc
-	stopOnce   sync.Once
-	sessionsMu sync.Mutex
-	sessions   map[*session.Session]*SessionGameStatus
-	round      uint8
-	step       uint32
+	GameID       string
+	ModeID       string
+	StageID      string
+	state        EnemyDuelGameState
+	wg           sync.WaitGroup
+	ctx          context.Context
+	cancel       context.CancelFunc
+	stopOnce     sync.Once
+	sessionsMu   sync.Mutex
+	sessions     map[*session.Session]*SessionGameStatus
+	noNewSession bool
+	round        uint8
+	step         uint32
 }
 
 func NewEnemyDuelGame(gameID string, modeID string, stageID string) *EnemyDuelGame {
@@ -392,11 +394,24 @@ func (gm *EnemyDuelGame) Stop() {
 	})
 }
 
-func (gm *EnemyDuelGame) AddSession(s *session.Session, g *SessionGameStatus) {
+func (gm *EnemyDuelGame) AddSession(s *session.Session, g *SessionGameStatus) error {
 	gm.sessionsMu.Lock()
 	defer gm.sessionsMu.Unlock()
 
+	if gm.noNewSession {
+		return fmt.Errorf("game no new session")
+	}
+
 	gm.sessions[s] = g
+
+	return nil
+}
+
+func (gm *EnemyDuelGame) setNoNewSession() {
+	gm.sessionsMu.Lock()
+	defer gm.sessionsMu.Unlock()
+
+	gm.noNewSession = true
 }
 
 func (gm *EnemyDuelGame) getSessions() map[*session.Session]*SessionGameStatus {
@@ -549,7 +564,13 @@ func HandleSessionMessage(s *session.Session, g *SessionGameStatus, c contract.C
 			return
 		}
 
-		game.AddSession(s, g)
+		err = game.AddSession(s, g)
+		if err != nil {
+			defer s.SendMessage(contract.NewS2CEnemyDuelQuitMessage())
+			log.Printf("failed to add session to game: %v", err)
+			return
+		}
+
 		g.EnemyDuel = game
 
 		s.SendMessage(contract.NewS2CEnemyDuelJoinMessage(stageID))
