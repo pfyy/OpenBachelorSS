@@ -146,12 +146,6 @@ type EnemyDuelGameWaitingState struct {
 func (s *EnemyDuelGameWaitingState) OnEnter() {
 	s.SetEnterTime()
 	s.SetForceExitTime(30)
-
-	sessions := s.EnemyDuel.getSessions()
-
-	for session := range sessions {
-		session.SendMessage(contract.NewS2CEnemyDuelJoinMessage())
-	}
 }
 
 func (s *EnemyDuelGameWaitingState) OnExit() {
@@ -495,6 +489,8 @@ func HandleSessionMessage(s *session.Session, g *SessionGameStatus, c contract.C
 
 		game.AddSession(s, g)
 		g.EnemyDuel = game
+
+		s.SendMessage(contract.NewS2CEnemyDuelJoinMessage(stageID))
 
 		return
 	}
