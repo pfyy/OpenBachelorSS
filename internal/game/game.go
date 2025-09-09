@@ -257,7 +257,7 @@ type EnemyDuelGameSettleState struct {
 
 func (s *EnemyDuelGameSettleState) OnEnter() {
 	s.SetEnterTime()
-	s.SetForceExitTime(8)
+	s.SetForceExitTime(10)
 
 	sessions := s.EnemyDuel.getSessions()
 
