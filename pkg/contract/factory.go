@@ -1,6 +1,8 @@
 package contract
 
 import (
+	"time"
+
 	"github.com/OpenBachelor/OpenBachelorSS/internal/config"
 )
 
@@ -29,11 +31,20 @@ func NewS2CEnemyDuelEndMessage() *S2CEnemyDuelEndMessage {
 }
 
 func NewS2CEnemyDuelJoinMessage(stageID string) *S2CEnemyDuelJoinMessage {
-	return &S2CEnemyDuelJoinMessage{StageID: stageID}
+	currentTime := time.Now().Unix()
+	return &S2CEnemyDuelJoinMessage{
+		NowTs:   uint64(currentTime),
+		StageID: stageID,
+		Players: []*EnemyDuelServicePlayer{
+			{
+				PlayerID: "1", AvatarID: "avatar_def_01", NickName: "Bachelor#1234", AvatarType: "ICON",
+			},
+		},
+	}
 }
 
-func NewS2CEnemyDuelClientStateMessage(state uint8, round uint8) *S2CEnemyDuelClientStateMessage {
-	return &S2CEnemyDuelClientStateMessage{State: state, Round: round}
+func NewS2CEnemyDuelClientStateMessage(state uint8, round uint8, forceEndTs int64) *S2CEnemyDuelClientStateMessage {
+	return &S2CEnemyDuelClientStateMessage{State: state, Round: round, ForceEndTs: uint64(forceEndTs)}
 }
 
 func NewC2SEnemyDuelFinalSettleMessage() *C2SEnemyDuelFinalSettleMessage {

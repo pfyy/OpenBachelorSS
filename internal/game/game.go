@@ -174,7 +174,7 @@ func (s *EnemyDuelGameEntryState) OnEnter() {
 	sessions := s.EnemyDuel.getSessions()
 
 	for session := range sessions {
-		session.SendMessage(contract.NewS2CEnemyDuelClientStateMessage(1, s.EnemyDuel.round))
+		session.SendMessage(contract.NewS2CEnemyDuelClientStateMessage(1, s.EnemyDuel.round, s.ForceExitTime))
 	}
 }
 
@@ -204,7 +204,7 @@ func (s *EnemyDuelGameBetState) OnEnter() {
 	sessions := s.EnemyDuel.getSessions()
 
 	for session := range sessions {
-		session.SendMessage(contract.NewS2CEnemyDuelClientStateMessage(2, s.EnemyDuel.round))
+		session.SendMessage(contract.NewS2CEnemyDuelClientStateMessage(2, s.EnemyDuel.round, s.ForceExitTime))
 	}
 }
 
@@ -232,7 +232,7 @@ func (s *EnemyDuelGameBattleState) OnEnter() {
 	sessions := s.EnemyDuel.getSessions()
 
 	for session := range sessions {
-		session.SendMessage(contract.NewS2CEnemyDuelClientStateMessage(3, s.EnemyDuel.round))
+		session.SendMessage(contract.NewS2CEnemyDuelClientStateMessage(3, s.EnemyDuel.round, s.ForceExitTime))
 	}
 }
 
@@ -262,7 +262,7 @@ func (s *EnemyDuelGameSettleState) OnEnter() {
 	sessions := s.EnemyDuel.getSessions()
 
 	for session := range sessions {
-		session.SendMessage(contract.NewS2CEnemyDuelClientStateMessage(4, s.EnemyDuel.round))
+		session.SendMessage(contract.NewS2CEnemyDuelClientStateMessage(4, s.EnemyDuel.round, s.ForceExitTime))
 	}
 }
 
@@ -297,7 +297,7 @@ func (s *EnemyDuelGameFinishState) OnEnter() {
 	sessions := s.EnemyDuel.getSessions()
 
 	for session := range sessions {
-		session.SendMessage(contract.NewS2CEnemyDuelClientStateMessage(5, s.EnemyDuel.round))
+		session.SendMessage(contract.NewS2CEnemyDuelClientStateMessage(5, s.EnemyDuel.round, s.ForceExitTime))
 	}
 }
 
