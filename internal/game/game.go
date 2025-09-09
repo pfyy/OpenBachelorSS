@@ -256,6 +256,18 @@ func (gm *EnemyDuelGame) AddSession(s *session.Session, g *SessionGameStatus) {
 	gm.sessions[s] = g
 }
 
+func (gm *EnemyDuelGame) getSessions() map[*session.Session]*SessionGameStatus {
+	gm.sessionsMu.Lock()
+	defer gm.sessionsMu.Unlock()
+
+	sessions := make(map[*session.Session]*SessionGameStatus)
+	for s, g := range gm.sessions {
+		sessions[s] = g
+	}
+
+	return sessions
+}
+
 func getModeIDStageID(teamToken string) (string, string, error) {
 	parts := strings.Split(teamToken, "|")
 
