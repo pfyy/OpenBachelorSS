@@ -502,10 +502,7 @@ func HandleSessionMessage(s *session.Session, g *SessionGameStatus, c contract.C
 
 		game := getGame(gameID)
 		if game == nil {
-			defer s.SendMessage(contract.NewS2CEnemyDuelEndMessage())
-
 			log.Printf("game not found")
-
 			return
 		}
 
