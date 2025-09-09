@@ -125,12 +125,12 @@ type EnemyDuelGameState interface {
 	Update()
 }
 
-type EnemyDuelGameBaseState struct {
+type EnemyDuelGameStateBase struct {
 	EnemyDuel *EnemyDuelGame
 }
 
 type EnemyDuelGameWaitingState struct {
-	Base EnemyDuelGameBaseState
+	Base EnemyDuelGameStateBase
 }
 
 func (s *EnemyDuelGameWaitingState) OnEnter() {
@@ -146,7 +146,7 @@ func (s *EnemyDuelGameWaitingState) Update() {
 }
 
 type EnemyDuelGameEntryState struct {
-	Base EnemyDuelGameBaseState
+	Base EnemyDuelGameStateBase
 }
 
 func (s *EnemyDuelGameEntryState) OnEnter() {
@@ -162,19 +162,19 @@ func (s *EnemyDuelGameEntryState) Update() {
 }
 
 type EnemyDuelGameBetState struct {
-	Base EnemyDuelGameBaseState
+	Base EnemyDuelGameStateBase
 }
 
 type EnemyDuelGameBattleState struct {
-	Base EnemyDuelGameBaseState
+	Base EnemyDuelGameStateBase
 }
 
 type EnemyDuelGameSettleState struct {
-	Base EnemyDuelGameBaseState
+	Base EnemyDuelGameStateBase
 }
 
 type EnemyDuelGameFinishState struct {
-	Base EnemyDuelGameBaseState
+	Base EnemyDuelGameStateBase
 }
 
 type EnemyDuelGame struct {
@@ -202,7 +202,7 @@ func NewEnemyDuelGame(gameID string, modeID string, stageID string) *EnemyDuelGa
 		sessions: make(map[*session.Session]*SessionGameStatus),
 	}
 
-	gm.SetState(&EnemyDuelGameWaitingState{Base: EnemyDuelGameBaseState{EnemyDuel: gm}})
+	gm.SetState(&EnemyDuelGameWaitingState{Base: EnemyDuelGameStateBase{EnemyDuel: gm}})
 
 	return gm
 }
