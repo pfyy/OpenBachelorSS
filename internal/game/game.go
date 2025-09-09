@@ -126,12 +126,17 @@ type EnemyDuelGameState interface {
 }
 
 type EnemyDuelGameStateBase struct {
-	EnemyDuel *EnemyDuelGame
-	EnterTime int64
+	EnemyDuel     *EnemyDuelGame
+	EnterTime     int64
+	ForceExitTime int64
 }
 
 func (b *EnemyDuelGameStateBase) SetEnterTime() {
 	b.EnterTime = time.Now().Unix()
+}
+
+func (b *EnemyDuelGameStateBase) SetForceExitTime(maxDuration int64) {
+	b.ForceExitTime = b.EnterTime + maxDuration
 }
 
 type EnemyDuelGameWaitingState struct {
@@ -140,6 +145,7 @@ type EnemyDuelGameWaitingState struct {
 
 func (s *EnemyDuelGameWaitingState) OnEnter() {
 	s.SetEnterTime()
+	s.SetForceExitTime(30)
 }
 
 func (s *EnemyDuelGameWaitingState) OnExit() {
@@ -156,6 +162,7 @@ type EnemyDuelGameEntryState struct {
 
 func (s *EnemyDuelGameEntryState) OnEnter() {
 	s.SetEnterTime()
+	s.SetForceExitTime(3)
 }
 
 func (s *EnemyDuelGameEntryState) OnExit() {
@@ -172,6 +179,7 @@ type EnemyDuelGameBetState struct {
 
 func (s *EnemyDuelGameBetState) OnEnter() {
 	s.SetEnterTime()
+	s.SetForceExitTime(20)
 }
 
 func (s *EnemyDuelGameBetState) OnExit() {
@@ -188,6 +196,7 @@ type EnemyDuelGameBattleState struct {
 
 func (s *EnemyDuelGameBattleState) OnEnter() {
 	s.SetEnterTime()
+	s.SetForceExitTime(150)
 }
 
 func (s *EnemyDuelGameBattleState) OnExit() {
@@ -204,6 +213,7 @@ type EnemyDuelGameSettleState struct {
 
 func (s *EnemyDuelGameSettleState) OnEnter() {
 	s.SetEnterTime()
+	s.SetForceExitTime(8)
 }
 
 func (s *EnemyDuelGameSettleState) OnExit() {
@@ -220,6 +230,7 @@ type EnemyDuelGameFinishState struct {
 
 func (s *EnemyDuelGameFinishState) OnEnter() {
 	s.SetEnterTime()
+	s.SetForceExitTime(10)
 }
 
 func (s *EnemyDuelGameFinishState) OnExit() {
