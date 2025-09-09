@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/OpenBachelor/OpenBachelorSS/internal/game"
 	"github.com/OpenBachelor/OpenBachelorSS/internal/session"
@@ -31,8 +32,37 @@ func NewHub(parentCtx context.Context) *Hub {
 	}
 }
 
-func (h *Hub) Start() {
+func (h *Hub) copySessions() map[*session.Session]*game.SessionGameStatus {
+	h.sessionsMu.Lock()
+	defer h.sessionsMu.Unlock()
 
+	sessions := make(map[*session.Session]*game.SessionGameStatus)
+
+	for s, g := range h.sessions {
+		sessions[s] = g
+	}
+
+	return sessions
+}
+
+func (h *Hub) Start() {
+	h.wg.Add(1)
+
+	go func() {
+		defer h.wg.Done()
+
+		ticker := time.NewTicker(3 * time.Second)
+
+		for {
+			select {
+			case <-ticker.C:
+				sessions := h.copySessions()
+				game.CloseInactiveSession(sessions)
+			case <-h.ctx.Done():
+				return
+			}
+		}
+	}()
 }
 
 func (h *Hub) Close() {

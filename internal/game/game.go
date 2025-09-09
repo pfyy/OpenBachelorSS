@@ -22,6 +22,7 @@ type EnemyDuelGamePlayerStatus struct {
 }
 
 type SessionGameStatus struct {
+	LastActiveTime            time.Time
 	EnemyDuel                 *EnemyDuelGame
 	EnemyDuelGamePlayerStatus EnemyDuelGamePlayerStatus
 }
@@ -367,6 +368,7 @@ func (gm *EnemyDuelGame) Run() {
 
 	go func() {
 		defer gm.wg.Done()
+		defer gm.cancel()
 
 		ticker := time.NewTicker(100 * time.Millisecond)
 
@@ -380,7 +382,6 @@ func (gm *EnemyDuelGame) Run() {
 				if gm.state != nil {
 					gm.state.Update()
 				} else {
-					gm.cancel()
 					return
 				}
 			case <-gm.ctx.Done():
@@ -527,7 +528,20 @@ func getOrCreateGame(gameID string, modeID string, stageID string) *EnemyDuelGam
 	return game
 }
 
+func CloseInactiveSession(sessions map[*session.Session]*SessionGameStatus) {
+	currentTime := time.Now()
+	tenSecAgo := currentTime.Add(-10 * time.Second)
+
+	for s, g := range sessions {
+		if g.LastActiveTime.Before(tenSecAgo) {
+			s.Close()
+		}
+	}
+}
+
 func HandleSessionMessage(s *session.Session, g *SessionGameStatus, c contract.Content) {
+	g.LastActiveTime = time.Now()
+
 	if msg, ok := c.(*contract.C2SEnemyDuelHeartBeatMessage); ok {
 		s.SendMessage(contract.NewS2CEnemyDuelHeartBeatMessage(msg.Seq, msg.Time))
 		return
