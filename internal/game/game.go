@@ -373,6 +373,10 @@ func (gm *EnemyDuelGame) Run() {
 		for {
 			select {
 			case <-ticker.C:
+				if !gm.hasAliveSession() {
+					return
+				}
+
 				if gm.state != nil {
 					gm.state.Update()
 				} else {
@@ -481,6 +485,18 @@ func (gm *EnemyDuelGame) getReportSide() uint8 {
 	}
 
 	return reportSide
+}
+
+func (gm *EnemyDuelGame) hasAliveSession() bool {
+	sessions := gm.getSessions()
+
+	for s := range sessions {
+		if !s.IsClosed() {
+			return true
+		}
+	}
+
+	return false
 }
 
 func getModeIDStageID(teamToken string) (string, string, error) {
