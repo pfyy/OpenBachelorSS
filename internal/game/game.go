@@ -128,6 +128,22 @@ type EnemyDuelGameBaseState struct {
 	EnemyDuel *EnemyDuelGame
 }
 
+type EnemyDuelGameWaitingState struct {
+	Base EnemyDuelGameBaseState
+}
+
+func (s *EnemyDuelGameWaitingState) OnEnter() {
+
+}
+
+func (s *EnemyDuelGameWaitingState) OnExit() {
+
+}
+
+func (s *EnemyDuelGameWaitingState) Update() {
+
+}
+
 type EnemyDuelGameEntryState struct {
 	Base EnemyDuelGameBaseState
 }
@@ -186,7 +202,7 @@ func NewEnemyDuelGame(gameID string, modeID string, stageID string) *EnemyDuelGa
 		sessions: make(map[*session.Session]*SessionGameStatus),
 	}
 
-	gm.SetState(&EnemyDuelGameEntryState{Base: EnemyDuelGameBaseState{EnemyDuel: gm}})
+	gm.SetState(&EnemyDuelGameWaitingState{Base: EnemyDuelGameBaseState{EnemyDuel: gm}})
 
 	return gm
 }
