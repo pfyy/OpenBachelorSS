@@ -39,3 +39,12 @@ func NewS2CEnemyDuelClientStateMessage(state uint8, round uint8) *S2CEnemyDuelCl
 func NewC2SEnemyDuelFinalSettleMessage() *C2SEnemyDuelFinalSettleMessage {
 	return &C2SEnemyDuelFinalSettleMessage{}
 }
+
+func NewS2CEnemyDuelStepMessage(step uint32, round uint8) *S2CEnemyDuelStepMessage {
+	return &S2CEnemyDuelStepMessage{
+		Index:    step,
+		Duration: 100,
+		CheckSeq: -1,
+		Round:    round,
+	}
+}

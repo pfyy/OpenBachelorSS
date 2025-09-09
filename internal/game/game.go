@@ -169,6 +169,8 @@ func (s *EnemyDuelGameEntryState) OnEnter() {
 	s.SetEnterTime()
 	s.SetForceExitTime(3)
 
+	s.EnemyDuel.clearStep()
+
 	sessions := s.EnemyDuel.getSessions()
 
 	for session := range sessions {
@@ -187,6 +189,8 @@ func (s *EnemyDuelGameEntryState) Update() {
 		s.EnemyDuel.SetState(&EnemyDuelGameBetState{EnemyDuelGameStateBase: EnemyDuelGameStateBase{EnemyDuel: s.EnemyDuel}})
 		return
 	}
+
+	s.EnemyDuel.doStep()
 }
 
 type EnemyDuelGameBetState struct {
@@ -243,6 +247,8 @@ func (s *EnemyDuelGameBattleState) Update() {
 		s.EnemyDuel.SetState(&EnemyDuelGameSettleState{EnemyDuelGameStateBase: EnemyDuelGameStateBase{EnemyDuel: s.EnemyDuel}})
 		return
 	}
+
+	s.EnemyDuel.doStep()
 }
 
 type EnemyDuelGameSettleState struct {
@@ -320,6 +326,7 @@ type EnemyDuelGame struct {
 	sessionsMu sync.Mutex
 	sessions   map[*session.Session]*SessionGameStatus
 	round      uint8
+	step       uint32
 }
 
 func NewEnemyDuelGame(gameID string, modeID string, stageID string) *EnemyDuelGame {
@@ -408,6 +415,21 @@ func (gm *EnemyDuelGame) getMaxRound() uint8 {
 	}
 
 	return 0xff
+}
+
+func (gm *EnemyDuelGame) doStep() {
+	sessions := gm.getSessions()
+
+	for session := range sessions {
+		session.SendMessage(contract.NewS2CEnemyDuelStepMessage(gm.step, gm.round))
+
+	}
+
+	gm.step++
+}
+
+func (gm *EnemyDuelGame) clearStep() {
+	gm.step = 0
 }
 
 func getModeIDStageID(teamToken string) (string, string, error) {
