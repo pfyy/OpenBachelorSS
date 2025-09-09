@@ -146,6 +146,12 @@ type EnemyDuelGameWaitingState struct {
 func (s *EnemyDuelGameWaitingState) OnEnter() {
 	s.SetEnterTime()
 	s.SetForceExitTime(30)
+
+	sessions := s.EnemyDuel.getSessions()
+
+	for session := range sessions {
+		session.SendMessage(contract.NewS2CEnemyDuelJoinMessage())
+	}
 }
 
 func (s *EnemyDuelGameWaitingState) OnExit() {
@@ -153,7 +159,12 @@ func (s *EnemyDuelGameWaitingState) OnExit() {
 }
 
 func (s *EnemyDuelGameWaitingState) Update() {
+	currentTime := time.Now().Unix()
 
+	if currentTime > s.ForceExitTime {
+		s.EnemyDuel.SetState(&EnemyDuelGameEntryState{EnemyDuelGameStateBase: EnemyDuelGameStateBase{EnemyDuel: s.EnemyDuel}})
+		return
+	}
 }
 
 type EnemyDuelGameEntryState struct {
@@ -163,6 +174,12 @@ type EnemyDuelGameEntryState struct {
 func (s *EnemyDuelGameEntryState) OnEnter() {
 	s.SetEnterTime()
 	s.SetForceExitTime(3)
+
+	sessions := s.EnemyDuel.getSessions()
+
+	for session := range sessions {
+		session.SendMessage(contract.NewS2CEnemyDuelClientStateMessage(1, s.EnemyDuel.round))
+	}
 }
 
 func (s *EnemyDuelGameEntryState) OnExit() {
@@ -170,7 +187,12 @@ func (s *EnemyDuelGameEntryState) OnExit() {
 }
 
 func (s *EnemyDuelGameEntryState) Update() {
+	currentTime := time.Now().Unix()
 
+	if currentTime > s.ForceExitTime {
+		s.EnemyDuel.SetState(&EnemyDuelGameBetState{EnemyDuelGameStateBase: EnemyDuelGameStateBase{EnemyDuel: s.EnemyDuel}})
+		return
+	}
 }
 
 type EnemyDuelGameBetState struct {
@@ -180,6 +202,12 @@ type EnemyDuelGameBetState struct {
 func (s *EnemyDuelGameBetState) OnEnter() {
 	s.SetEnterTime()
 	s.SetForceExitTime(20)
+
+	sessions := s.EnemyDuel.getSessions()
+
+	for session := range sessions {
+		session.SendMessage(contract.NewS2CEnemyDuelClientStateMessage(2, s.EnemyDuel.round))
+	}
 }
 
 func (s *EnemyDuelGameBetState) OnExit() {
@@ -187,7 +215,12 @@ func (s *EnemyDuelGameBetState) OnExit() {
 }
 
 func (s *EnemyDuelGameBetState) Update() {
+	currentTime := time.Now().Unix()
 
+	if currentTime > s.ForceExitTime {
+		s.EnemyDuel.SetState(&EnemyDuelGameBattleState{EnemyDuelGameStateBase: EnemyDuelGameStateBase{EnemyDuel: s.EnemyDuel}})
+		return
+	}
 }
 
 type EnemyDuelGameBattleState struct {
@@ -197,6 +230,12 @@ type EnemyDuelGameBattleState struct {
 func (s *EnemyDuelGameBattleState) OnEnter() {
 	s.SetEnterTime()
 	s.SetForceExitTime(150)
+
+	sessions := s.EnemyDuel.getSessions()
+
+	for session := range sessions {
+		session.SendMessage(contract.NewS2CEnemyDuelClientStateMessage(3, s.EnemyDuel.round))
+	}
 }
 
 func (s *EnemyDuelGameBattleState) OnExit() {
@@ -204,7 +243,12 @@ func (s *EnemyDuelGameBattleState) OnExit() {
 }
 
 func (s *EnemyDuelGameBattleState) Update() {
+	currentTime := time.Now().Unix()
 
+	if currentTime > s.ForceExitTime {
+		s.EnemyDuel.SetState(&EnemyDuelGameSettleState{EnemyDuelGameStateBase: EnemyDuelGameStateBase{EnemyDuel: s.EnemyDuel}})
+		return
+	}
 }
 
 type EnemyDuelGameSettleState struct {
@@ -214,6 +258,12 @@ type EnemyDuelGameSettleState struct {
 func (s *EnemyDuelGameSettleState) OnEnter() {
 	s.SetEnterTime()
 	s.SetForceExitTime(8)
+
+	sessions := s.EnemyDuel.getSessions()
+
+	for session := range sessions {
+		session.SendMessage(contract.NewS2CEnemyDuelClientStateMessage(4, s.EnemyDuel.round))
+	}
 }
 
 func (s *EnemyDuelGameSettleState) OnExit() {
@@ -221,7 +271,19 @@ func (s *EnemyDuelGameSettleState) OnExit() {
 }
 
 func (s *EnemyDuelGameSettleState) Update() {
+	currentTime := time.Now().Unix()
 
+	if currentTime > s.ForceExitTime {
+		maxRound := s.EnemyDuel.getMaxRound()
+		if s.EnemyDuel.round+1 >= maxRound {
+			s.EnemyDuel.SetState(&EnemyDuelGameFinishState{EnemyDuelGameStateBase: EnemyDuelGameStateBase{EnemyDuel: s.EnemyDuel}})
+		} else {
+			s.EnemyDuel.round++
+			s.EnemyDuel.SetState(&EnemyDuelGameEntryState{EnemyDuelGameStateBase: EnemyDuelGameStateBase{EnemyDuel: s.EnemyDuel}})
+		}
+
+		return
+	}
 }
 
 type EnemyDuelGameFinishState struct {
@@ -231,14 +293,25 @@ type EnemyDuelGameFinishState struct {
 func (s *EnemyDuelGameFinishState) OnEnter() {
 	s.SetEnterTime()
 	s.SetForceExitTime(10)
+
+	sessions := s.EnemyDuel.getSessions()
+
+	for session := range sessions {
+		session.SendMessage(contract.NewS2CEnemyDuelClientStateMessage(5, s.EnemyDuel.round))
+	}
 }
 
 func (s *EnemyDuelGameFinishState) OnExit() {
+	sessions := s.EnemyDuel.getSessions()
 
+	for session := range sessions {
+		session.SendMessage(contract.NewC2SEnemyDuelFinalSettleMessage())
+		session.SendMessage(contract.NewS2CEnemyDuelEndMessage())
+	}
 }
 
 func (s *EnemyDuelGameFinishState) Update() {
-
+	s.EnemyDuel.SetState(nil)
 }
 
 type EnemyDuelGame struct {
@@ -252,6 +325,7 @@ type EnemyDuelGame struct {
 	stopOnce   sync.Once
 	sessionsMu sync.Mutex
 	sessions   map[*session.Session]*SessionGameStatus
+	round      uint8
 }
 
 func NewEnemyDuelGame(gameID string, modeID string, stageID string) *EnemyDuelGame {
@@ -330,6 +404,16 @@ func (gm *EnemyDuelGame) getSessions() map[*session.Session]*SessionGameStatus {
 	}
 
 	return sessions
+}
+
+func (gm *EnemyDuelGame) getMaxRound() uint8 {
+	switch gm.ModeID {
+	case "multiOperationMatch":
+		return 10
+
+	}
+
+	return 0xff
 }
 
 func getModeIDStageID(teamToken string) (string, string, error) {

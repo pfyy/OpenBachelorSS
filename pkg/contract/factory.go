@@ -27,3 +27,15 @@ func NewS2CEnemyDuelTeamStatusMessage(sceneID string, token string) *S2CEnemyDue
 func NewS2CEnemyDuelEndMessage() *S2CEnemyDuelEndMessage {
 	return &S2CEnemyDuelEndMessage{}
 }
+
+func NewS2CEnemyDuelJoinMessage() *S2CEnemyDuelJoinMessage {
+	return &S2CEnemyDuelJoinMessage{}
+}
+
+func NewS2CEnemyDuelClientStateMessage(state uint8, round uint8) *S2CEnemyDuelClientStateMessage {
+	return &S2CEnemyDuelClientStateMessage{State: state, Round: round}
+}
+
+func NewC2SEnemyDuelFinalSettleMessage() *C2SEnemyDuelFinalSettleMessage {
+	return &C2SEnemyDuelFinalSettleMessage{}
+}
