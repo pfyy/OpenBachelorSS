@@ -18,6 +18,7 @@ type EnemyDuelGamePlayerStatus struct {
 	Streak      uint8
 	Side        uint8
 	AllIn       uint8
+	ReportSide  uint8
 }
 
 type SessionGameStatus struct {
@@ -170,6 +171,7 @@ func (s *EnemyDuelGameEntryState) OnEnter() {
 	s.SetForceExitTime(3 * time.Second)
 
 	s.EnemyDuel.clearStep()
+	s.EnemyDuel.clearReportSide()
 
 	sessions := s.EnemyDuel.getSessions()
 
@@ -241,9 +243,11 @@ func (s *EnemyDuelGameBattleState) OnExit() {
 }
 
 func (s *EnemyDuelGameBattleState) Update() {
+	reportSide := s.EnemyDuel.getReportSide()
+
 	currentTime := time.Now()
 
-	if currentTime.After(s.ForceExitTime) {
+	if reportSide != 0 || currentTime.After(s.ForceExitTime) {
 		s.EnemyDuel.SetState(&EnemyDuelGameSettleState{EnemyDuelGameStateBase: EnemyDuelGameStateBase{EnemyDuel: s.EnemyDuel}})
 		return
 	}
@@ -432,6 +436,38 @@ func (gm *EnemyDuelGame) clearStep() {
 	gm.step = 0
 }
 
+func (gm *EnemyDuelGame) clearReportSide() {
+	sessions := gm.getSessions()
+
+	for _, g := range sessions {
+		g.EnemyDuelGamePlayerStatus.ReportSide = 0
+	}
+}
+
+func (gm *EnemyDuelGame) getReportSide() uint8 {
+	sessions := gm.getSessions()
+
+	reportSideCntMap := make(map[uint8]int)
+
+	for s, g := range sessions {
+		if !s.IsClosed() {
+			reportSideCntMap[g.EnemyDuelGamePlayerStatus.ReportSide]++
+		}
+	}
+
+	reportSide := uint8(0)
+	reportSideCnt := 0
+
+	for k, v := range reportSideCntMap {
+		if v > reportSideCnt {
+			reportSide = k
+			reportSideCnt = v
+		}
+	}
+
+	return reportSide
+}
+
 func getModeIDStageID(teamToken string) (string, string, error) {
 	parts := strings.Split(teamToken, "|")
 
@@ -517,6 +553,12 @@ func HandleSessionMessage(s *session.Session, g *SessionGameStatus, c contract.C
 		g.EnemyDuel = game
 
 		s.SendMessage(contract.NewS2CEnemyDuelJoinMessage(stageID))
+
+		return
+	}
+
+	if msg, ok := c.(*contract.C2SEnemyDuelRoundSettleMessage); ok {
+		g.EnemyDuelGamePlayerStatus.ReportSide = msg.Side
 
 		return
 	}
