@@ -75,3 +75,9 @@ func NewS2CEnemyDuelEmojiMessage(emojiGroup, emojiID string, playerID string) *S
 		EmojiID:    emojiID,
 	}
 }
+
+func NewS2CEnemyDuelClientStateMessageForBet(state uint8, round uint8, forceEndTs time.Time, playerID string, side uint8, allIn uint8, streak uint8) *S2CEnemyDuelClientStateMessage {
+	msg := NewS2CEnemyDuelClientStateMessage(state, round, forceEndTs)
+	msg.BetList = []*EnemyDuelBattleStatusBetItem{{PlayerID: playerID, Side: side, AllIn: allIn, Streak: streak}}
+	return msg
+}

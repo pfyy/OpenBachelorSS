@@ -551,6 +551,37 @@ func (gm *EnemyDuelGame) handleEmojiMessage(s *session.Session, g *SessionGameSt
 	}
 }
 
+func (gm *EnemyDuelGame) handleBetMessage(s *session.Session, g *SessionGameStatus, msg *contract.C2SEnemyDuelBetMessage) {
+	state := gm.state
+
+	if _, ok := state.(*EnemyDuelGameBetState); !ok {
+		return
+	}
+
+	g.EnemyDuelGamePlayerStatus.Side = msg.Side
+	g.EnemyDuelGamePlayerStatus.AllIn = msg.AllIn
+
+	sessions := gm.getSessions()
+
+	for session := range sessions {
+		var playerID string
+		if session == s {
+			playerID = g.EnemyDuelGamePlayerStatus.PlayerID
+		} else {
+			playerID = g.EnemyDuelGamePlayerStatus.getExternalPlayerID()
+		}
+		session.SendMessage(
+			contract.NewS2CEnemyDuelClientStateMessageForBet(
+				2, gm.round, state.GetForceExitTime(),
+				playerID,
+				g.EnemyDuelGamePlayerStatus.Side,
+				g.EnemyDuelGamePlayerStatus.AllIn,
+				g.EnemyDuelGamePlayerStatus.Streak,
+			),
+		)
+	}
+}
+
 func (gm *EnemyDuelGame) getOtherPlayerIDSlice(internalPlayerID int) []string {
 	otherPlayerIDSlice := []string(nil)
 
@@ -685,6 +716,12 @@ func HandleSessionMessage(s *session.Session, g *SessionGameStatus, c contract.C
 
 	if msg, ok := c.(*contract.C2SEnemyDuelEmojiMessage); ok {
 		g.EnemyDuel.handleEmojiMessage(s, g, msg)
+
+		return
+	}
+
+	if msg, ok := c.(*contract.C2SEnemyDuelBetMessage); ok {
+		g.EnemyDuel.handleBetMessage(s, g, msg)
 
 		return
 	}
