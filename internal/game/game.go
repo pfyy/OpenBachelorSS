@@ -422,6 +422,10 @@ func (gm *EnemyDuelGame) AddSession(s *session.Session, g *SessionGameStatus) er
 		return fmt.Errorf("game no new session")
 	}
 
+	if gm.nextInternalPlayerID >= gm.getMaxNumPlayer() {
+		return fmt.Errorf("game full")
+	}
+
 	gm.sessions[s] = g
 
 	g.EnemyDuel = gm
@@ -458,6 +462,16 @@ func (gm *EnemyDuelGame) getMaxRound() uint8 {
 	}
 
 	return 0xff
+}
+
+func (gm *EnemyDuelGame) getMaxNumPlayer() int {
+	switch gm.ModeID {
+	case "multiOperationMatch":
+		return 8
+
+	}
+
+	return 30
 }
 
 func (gm *EnemyDuelGame) doStep() {
