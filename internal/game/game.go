@@ -134,6 +134,7 @@ type EnemyDuelGameState interface {
 	OnEnter()
 	OnExit()
 	Update()
+	GetForceExitTime() time.Time
 }
 
 type EnemyDuelGameStateBase struct {
@@ -148,6 +149,10 @@ func (b *EnemyDuelGameStateBase) SetEnterTime() {
 
 func (b *EnemyDuelGameStateBase) SetForceExitTime(maxDuration time.Duration) {
 	b.ForceExitTime = b.EnterTime.Add(maxDuration)
+}
+
+func (b *EnemyDuelGameStateBase) GetForceExitTime() time.Time {
+	return b.ForceExitTime
 }
 
 type EnemyDuelGameWaitingState struct {
