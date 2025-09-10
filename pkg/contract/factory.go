@@ -30,14 +30,20 @@ func NewS2CEnemyDuelEndMessage() *S2CEnemyDuelEndMessage {
 	return &S2CEnemyDuelEndMessage{}
 }
 
-func NewS2CEnemyDuelJoinMessage(stageID string, playerID string) *S2CEnemyDuelJoinMessage {
+func NewS2CEnemyDuelJoinMessage(stageID string, playerID string, otherPlayerIDSlice []string) *S2CEnemyDuelJoinMessage {
+	players := []*EnemyDuelServicePlayer{
+		{
+			PlayerID: playerID, AvatarID: "avatar_def_01", NickName: "Bachelor#1234", AvatarType: "ICON",
+		},
+	}
+
+	for _, otherPlayerID := range otherPlayerIDSlice {
+		players = append(players, &EnemyDuelServicePlayer{PlayerID: otherPlayerID, AvatarID: "avatar_def_01", NickName: "Undergraduate#1234", AvatarType: "ICON"})
+	}
+
 	return &S2CEnemyDuelJoinMessage{
 		StageID: stageID,
-		Players: []*EnemyDuelServicePlayer{
-			{
-				PlayerID: playerID, AvatarID: "avatar_def_01", NickName: "Bachelor#1234", AvatarType: "ICON",
-			},
-		},
+		Players: players,
 	}
 }
 

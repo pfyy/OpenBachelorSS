@@ -24,8 +24,12 @@ type EnemyDuelGamePlayerStatus struct {
 	ReportSide       uint8
 }
 
+func getExternalPlayerID(internalPlayerID int) string {
+	return strconv.Itoa(100 + internalPlayerID)
+}
+
 func (s *EnemyDuelGamePlayerStatus) getExternalPlayerID() string {
-	return strconv.Itoa(100 + s.internalPlayerID)
+	return getExternalPlayerID(s.internalPlayerID)
 }
 
 type SessionGameStatus struct {
@@ -547,6 +551,22 @@ func (gm *EnemyDuelGame) handleEmojiMessage(s *session.Session, g *SessionGameSt
 	}
 }
 
+func (gm *EnemyDuelGame) getOtherPlayerIDSlice(internalPlayerID int) []string {
+	otherPlayerIDSlice := []string(nil)
+
+	maxNumPlayer := gm.getMaxNumPlayer()
+
+	for i := 0; i < maxNumPlayer; i++ {
+		if i == internalPlayerID {
+			continue
+		}
+
+		otherPlayerIDSlice = append(otherPlayerIDSlice, getExternalPlayerID(i))
+	}
+
+	return otherPlayerIDSlice
+}
+
 func getModeIDStageID(teamToken string) (string, string, error) {
 	parts := strings.Split(teamToken, "|")
 
@@ -650,7 +670,9 @@ func HandleSessionMessage(s *session.Session, g *SessionGameStatus, c contract.C
 
 		g.EnemyDuelGamePlayerStatus.PlayerID = msg.PlayerID
 
-		s.SendMessage(contract.NewS2CEnemyDuelJoinMessage(stageID, msg.PlayerID))
+		otherPlayerIDSlice := game.getOtherPlayerIDSlice(g.EnemyDuelGamePlayerStatus.internalPlayerID)
+
+		s.SendMessage(contract.NewS2CEnemyDuelJoinMessage(stageID, msg.PlayerID, otherPlayerIDSlice))
 
 		return
 	}
