@@ -61,3 +61,10 @@ func NewS2CEnemyDuelStepMessage(step uint32, round uint8) *S2CEnemyDuelStepMessa
 func NewS2CEnemyDuelQuitMessage() *S2CEnemyDuelQuitMessage {
 	return &S2CEnemyDuelQuitMessage{}
 }
+
+func NewS2CEnemyDuelEmojiMessage(emojiGroup, emojiID string) *S2CEnemyDuelEmojiMessage {
+	return &S2CEnemyDuelEmojiMessage{
+		EmojiGroup: emojiGroup,
+		EmojiID:    emojiID,
+	}
+}

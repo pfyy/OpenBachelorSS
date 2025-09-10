@@ -502,6 +502,14 @@ func (gm *EnemyDuelGame) hasAliveSession() bool {
 	return false
 }
 
+func (gm *EnemyDuelGame) handleEmojiMessage(s *session.Session, g *SessionGameStatus, msg *contract.C2SEnemyDuelEmojiMessage) {
+	sessions := gm.getSessions()
+
+	for session := range sessions {
+		session.SendMessage(contract.NewS2CEnemyDuelEmojiMessage(msg.EmojiGroup, msg.EmojiID))
+	}
+}
+
 func getModeIDStageID(teamToken string) (string, string, error) {
 	parts := strings.Split(teamToken, "|")
 
@@ -612,6 +620,12 @@ func HandleSessionMessage(s *session.Session, g *SessionGameStatus, c contract.C
 
 	if msg, ok := c.(*contract.C2SEnemyDuelRoundSettleMessage); ok {
 		g.EnemyDuelGamePlayerStatus.ReportSide = msg.Side
+
+		return
+	}
+
+	if msg, ok := c.(*contract.C2SEnemyDuelEmojiMessage); ok {
+		g.EnemyDuel.handleEmojiMessage(s, g, msg)
 
 		return
 	}
