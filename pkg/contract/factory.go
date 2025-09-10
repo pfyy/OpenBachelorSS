@@ -62,8 +62,9 @@ func NewS2CEnemyDuelQuitMessage() *S2CEnemyDuelQuitMessage {
 	return &S2CEnemyDuelQuitMessage{}
 }
 
-func NewS2CEnemyDuelEmojiMessage(emojiGroup, emojiID string) *S2CEnemyDuelEmojiMessage {
+func NewS2CEnemyDuelEmojiMessage(emojiGroup, emojiID string, playerID string) *S2CEnemyDuelEmojiMessage {
 	return &S2CEnemyDuelEmojiMessage{
+		PlayerID:   playerID,
 		EmojiGroup: emojiGroup,
 		EmojiID:    emojiID,
 	}

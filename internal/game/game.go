@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -13,6 +14,7 @@ import (
 )
 
 type EnemyDuelGamePlayerStatus struct {
+	PlayerID         string
 	internalPlayerID int
 	Money            uint32
 	ShieldState      uint8
@@ -20,6 +22,10 @@ type EnemyDuelGamePlayerStatus struct {
 	Side             uint8
 	AllIn            uint8
 	ReportSide       uint8
+}
+
+func (s *EnemyDuelGamePlayerStatus) getExternalPlayerID() string {
+	return strconv.Itoa(100 + s.internalPlayerID)
 }
 
 type SessionGameStatus struct {
@@ -512,7 +518,13 @@ func (gm *EnemyDuelGame) handleEmojiMessage(s *session.Session, g *SessionGameSt
 	sessions := gm.getSessions()
 
 	for session := range sessions {
-		session.SendMessage(contract.NewS2CEnemyDuelEmojiMessage(msg.EmojiGroup, msg.EmojiID))
+		var playerID string
+		if session == s {
+			playerID = g.EnemyDuelGamePlayerStatus.PlayerID
+		} else {
+			playerID = g.EnemyDuelGamePlayerStatus.getExternalPlayerID()
+		}
+		session.SendMessage(contract.NewS2CEnemyDuelEmojiMessage(msg.EmojiGroup, msg.EmojiID, playerID))
 	}
 }
 
@@ -616,6 +628,8 @@ func HandleSessionMessage(s *session.Session, g *SessionGameStatus, c contract.C
 			log.Printf("failed to add session to game: %v", err)
 			return
 		}
+
+		g.EnemyDuelGamePlayerStatus.PlayerID = msg.PlayerID
 
 		s.SendMessage(contract.NewS2CEnemyDuelJoinMessage(stageID))
 
