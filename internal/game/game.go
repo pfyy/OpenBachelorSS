@@ -13,12 +13,13 @@ import (
 )
 
 type EnemyDuelGamePlayerStatus struct {
-	Money       uint32
-	ShieldState uint8
-	Streak      uint8
-	Side        uint8
-	AllIn       uint8
-	ReportSide  uint8
+	internalPlayerID int
+	Money            uint32
+	ShieldState      uint8
+	Streak           uint8
+	Side             uint8
+	AllIn            uint8
+	ReportSide       uint8
 }
 
 type SessionGameStatus struct {
@@ -323,19 +324,20 @@ func (s *EnemyDuelGameFinishState) Update() {
 }
 
 type EnemyDuelGame struct {
-	GameID       string
-	ModeID       string
-	StageID      string
-	state        EnemyDuelGameState
-	wg           sync.WaitGroup
-	ctx          context.Context
-	cancel       context.CancelFunc
-	stopOnce     sync.Once
-	sessionsMu   sync.Mutex
-	sessions     map[*session.Session]*SessionGameStatus
-	noNewSession bool
-	round        uint8
-	step         uint32
+	GameID               string
+	ModeID               string
+	StageID              string
+	state                EnemyDuelGameState
+	wg                   sync.WaitGroup
+	ctx                  context.Context
+	cancel               context.CancelFunc
+	stopOnce             sync.Once
+	sessionsMu           sync.Mutex
+	sessions             map[*session.Session]*SessionGameStatus
+	nextInternalPlayerID int
+	noNewSession         bool
+	round                uint8
+	step                 uint32
 }
 
 func NewEnemyDuelGame(gameID string, modeID string, stageID string) *EnemyDuelGame {
@@ -410,6 +412,10 @@ func (gm *EnemyDuelGame) AddSession(s *session.Session, g *SessionGameStatus) er
 	}
 
 	gm.sessions[s] = g
+
+	g.EnemyDuel = gm
+	g.EnemyDuelGamePlayerStatus.internalPlayerID = gm.nextInternalPlayerID
+	gm.nextInternalPlayerID++
 
 	return nil
 }
@@ -610,8 +616,6 @@ func HandleSessionMessage(s *session.Session, g *SessionGameStatus, c contract.C
 			log.Printf("failed to add session to game: %v", err)
 			return
 		}
-
-		g.EnemyDuel = game
 
 		s.SendMessage(contract.NewS2CEnemyDuelJoinMessage(stageID))
 
