@@ -598,6 +598,18 @@ func (gm *EnemyDuelGame) getOtherPlayerIDSlice(internalPlayerID int) []string {
 	return otherPlayerIDSlice
 }
 
+func (gm *EnemyDuelGame) initPlayerStatus(g *SessionGameStatus, playerID string) {
+	g.EnemyDuelGamePlayerStatus.PlayerID = playerID
+
+	switch gm.ModeID {
+	case "multiOperationMatch":
+		g.EnemyDuelGamePlayerStatus.Money = 10000
+		return
+	}
+	g.EnemyDuelGamePlayerStatus.Money = 1
+	g.EnemyDuelGamePlayerStatus.ShieldState = 2
+}
+
 func getModeIDStageID(teamToken string) (string, string, error) {
 	parts := strings.Split(teamToken, "|")
 
@@ -699,7 +711,7 @@ func HandleSessionMessage(s *session.Session, g *SessionGameStatus, c contract.C
 			return
 		}
 
-		g.EnemyDuelGamePlayerStatus.PlayerID = msg.PlayerID
+		game.initPlayerStatus(g, msg.PlayerID)
 
 		otherPlayerIDSlice := game.getOtherPlayerIDSlice(g.EnemyDuelGamePlayerStatus.internalPlayerID)
 
