@@ -636,7 +636,7 @@ func HandleSessionMessage(s *session.Session, g *SessionGameStatus, c contract.C
 
 		g.EnemyDuelGamePlayerStatus.PlayerID = msg.PlayerID
 
-		s.SendMessage(contract.NewS2CEnemyDuelJoinMessage(stageID))
+		s.SendMessage(contract.NewS2CEnemyDuelJoinMessage(stageID, msg.PlayerID))
 
 		return
 	}

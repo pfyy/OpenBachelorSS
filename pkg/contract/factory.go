@@ -30,12 +30,12 @@ func NewS2CEnemyDuelEndMessage() *S2CEnemyDuelEndMessage {
 	return &S2CEnemyDuelEndMessage{}
 }
 
-func NewS2CEnemyDuelJoinMessage(stageID string) *S2CEnemyDuelJoinMessage {
+func NewS2CEnemyDuelJoinMessage(stageID string, playerID string) *S2CEnemyDuelJoinMessage {
 	return &S2CEnemyDuelJoinMessage{
 		StageID: stageID,
 		Players: []*EnemyDuelServicePlayer{
 			{
-				PlayerID: "1", AvatarID: "avatar_def_01", NickName: "Bachelor#1234", AvatarType: "ICON",
+				PlayerID: playerID, AvatarID: "avatar_def_01", NickName: "Bachelor#1234", AvatarType: "ICON",
 			},
 		},
 	}
