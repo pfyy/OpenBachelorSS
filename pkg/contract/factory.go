@@ -1,6 +1,7 @@
 package contract
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/OpenBachelor/OpenBachelorSS/internal/config"
@@ -37,8 +38,8 @@ func NewS2CEnemyDuelJoinMessage(stageID string, playerID string, otherPlayerIDSl
 		},
 	}
 
-	for _, otherPlayerID := range otherPlayerIDSlice {
-		players = append(players, &EnemyDuelServicePlayer{PlayerID: otherPlayerID, AvatarID: "avatar_def_01", NickName: "Undergraduate#1234", AvatarType: "ICON"})
+	for i, otherPlayerID := range otherPlayerIDSlice {
+		players = append(players, &EnemyDuelServicePlayer{PlayerID: otherPlayerID, AvatarID: "avatar_def_01", NickName: fmt.Sprintf("Undergraduate#%04d", i), AvatarType: "ICON"})
 	}
 
 	return &S2CEnemyDuelJoinMessage{
