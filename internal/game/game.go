@@ -664,14 +664,14 @@ func (gm *EnemyDuelGame) getPlayerResult(s *session.Session, g *SessionGameStatu
 
 	switch gm.ModeID {
 	case "multiOperationMatch":
-		actualRoundMoney := min(gm.getRoundMoney(), g.EnemyDuelGamePlayerStatus.Money)
+		roundMoney := gm.getRoundMoney()
 		if won {
 			g.EnemyDuelGamePlayerStatus.Streak++
 
 			if g.EnemyDuelGamePlayerStatus.AllIn != 0 {
-				g.EnemyDuelGamePlayerStatus.Money += 2 * actualRoundMoney
+				g.EnemyDuelGamePlayerStatus.Money += 2 * roundMoney
 			} else {
-				g.EnemyDuelGamePlayerStatus.Money += actualRoundMoney
+				g.EnemyDuelGamePlayerStatus.Money += roundMoney
 			}
 		} else {
 			g.EnemyDuelGamePlayerStatus.Streak = 0
@@ -680,7 +680,7 @@ func (gm *EnemyDuelGame) getPlayerResult(s *session.Session, g *SessionGameStatu
 				if g.EnemyDuelGamePlayerStatus.AllIn != 0 {
 					g.EnemyDuelGamePlayerStatus.Money = 0
 				} else {
-					g.EnemyDuelGamePlayerStatus.Money -= actualRoundMoney
+					g.EnemyDuelGamePlayerStatus.Money -= roundMoney
 				}
 			}
 		}
