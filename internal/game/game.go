@@ -648,7 +648,7 @@ func (gm *EnemyDuelGame) getPlayerResult(s *session.Session, g *SessionGameStatu
 		g.EnemyDuelGamePlayerStatus.ShieldState = 0
 	}
 
-	if g.EnemyDuelGamePlayerStatus.Side == 3 {
+	if (g.EnemyDuelGamePlayerStatus.Side & 0b11) == 0b11 {
 		g.EnemyDuelGamePlayerStatus.Side = 0
 	}
 
