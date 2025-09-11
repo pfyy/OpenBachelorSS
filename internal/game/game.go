@@ -648,6 +648,10 @@ func (gm *EnemyDuelGame) getPlayerResult(s *session.Session, g *SessionGameStatu
 		g.EnemyDuelGamePlayerStatus.ShieldState = 0
 	}
 
+	if g.EnemyDuelGamePlayerStatus.Side == 3 {
+		g.EnemyDuelGamePlayerStatus.Side = 0
+	}
+
 	won := (g.EnemyDuelGamePlayerStatus.Money > 0) && ((gm.reportSide & g.EnemyDuelGamePlayerStatus.Side) != 0)
 	skip := g.EnemyDuelGamePlayerStatus.Side == 0
 
