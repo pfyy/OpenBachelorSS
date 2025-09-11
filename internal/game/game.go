@@ -191,7 +191,7 @@ func (s *EnemyDuelGameEntryState) OnEnter() {
 	s.SetForceExitTime(3 * time.Second)
 
 	s.EnemyDuel.clearStep()
-	s.EnemyDuel.clearReportSide()
+	s.EnemyDuel.clearState()
 
 	sessions := s.EnemyDuel.getSessions()
 
@@ -268,6 +268,7 @@ func (s *EnemyDuelGameBattleState) Update() {
 	currentTime := time.Now()
 
 	if reportSide != 0 || currentTime.After(s.ForceExitTime) {
+		s.EnemyDuel.reportSide = reportSide
 		s.EnemyDuel.SetState(&EnemyDuelGameSettleState{EnemyDuelGameStateBase: EnemyDuelGameStateBase{EnemyDuel: s.EnemyDuel}})
 		return
 	}
@@ -285,8 +286,10 @@ func (s *EnemyDuelGameSettleState) OnEnter() {
 
 	sessions := s.EnemyDuel.getSessions()
 
-	for session := range sessions {
-		session.SendMessage(contract.NewS2CEnemyDuelClientStateMessage(4, s.EnemyDuel.round, s.ForceExitTime))
+	for session, gameStatus := range sessions {
+		allPlayerResult := s.EnemyDuel.getAllPlayerResult()
+
+		session.SendMessage(contract.NewS2CEnemyDuelClientStateMessageForSettle(4, s.EnemyDuel.round, s.ForceExitTime, allPlayerResult, gameStatus.EnemyDuelGamePlayerStatus.PlayerID, gameStatus.EnemyDuelGamePlayerStatus.getExternalPlayerID()))
 	}
 }
 
@@ -353,6 +356,7 @@ type EnemyDuelGame struct {
 	noNewSession         bool
 	round                uint8
 	step                 uint32
+	reportSide           uint8
 }
 
 func NewEnemyDuelGame(gameID string, modeID string, stageID string) *EnemyDuelGame {
@@ -493,10 +497,12 @@ func (gm *EnemyDuelGame) clearStep() {
 	gm.step = 0
 }
 
-func (gm *EnemyDuelGame) clearReportSide() {
+func (gm *EnemyDuelGame) clearState() {
 	sessions := gm.getSessions()
 
 	for _, g := range sessions {
+		g.EnemyDuelGamePlayerStatus.Side = 0
+		g.EnemyDuelGamePlayerStatus.AllIn = 0
 		g.EnemyDuelGamePlayerStatus.ReportSide = 0
 	}
 }
@@ -608,6 +614,124 @@ func (gm *EnemyDuelGame) initPlayerStatus(g *SessionGameStatus, playerID string)
 	}
 	g.EnemyDuelGamePlayerStatus.Money = 1
 	g.EnemyDuelGamePlayerStatus.ShieldState = 2
+}
+
+func newEmptyEnemyDuelBattleStatusRoundLeaderBoard(playerID string) *contract.EnemyDuelBattleStatusRoundLeaderBoard {
+	return &contract.EnemyDuelBattleStatusRoundLeaderBoard{
+		PlayerID: playerID,
+	}
+}
+
+var roundMoneyMap = map[int]uint32{
+	0: 2000,
+	1: 2400,
+	2: 3000,
+	3: 4000,
+	4: 5500,
+	5: 8000,
+	6: 12000,
+	7: 18000,
+	8: 30000,
+	9: 50000,
+}
+
+func (gm *EnemyDuelGame) getRoundMoney() uint32 {
+	if roundMoney, ok := roundMoneyMap[int(gm.round)]; ok {
+		return roundMoney
+	}
+
+	return 50000
+}
+
+func (gm *EnemyDuelGame) getPlayerResult(s *session.Session, g *SessionGameStatus) *contract.EnemyDuelBattleStatusRoundLeaderBoard {
+	if g.EnemyDuelGamePlayerStatus.ShieldState == 1 {
+		g.EnemyDuelGamePlayerStatus.ShieldState = 0
+	}
+
+	won := (g.EnemyDuelGamePlayerStatus.Money > 0) && ((gm.reportSide & g.EnemyDuelGamePlayerStatus.Side) != 0)
+	skip := g.EnemyDuelGamePlayerStatus.Side == 0
+
+	leaderBoard := contract.EnemyDuelBattleStatusRoundLeaderBoard{
+		PlayerID: g.EnemyDuelGamePlayerStatus.getExternalPlayerID(),
+		OldMoney: g.EnemyDuelGamePlayerStatus.Money,
+		Result:   gm.reportSide,
+		Bet:      g.EnemyDuelGamePlayerStatus.Side,
+	}
+
+	switch gm.ModeID {
+	case "multiOperationMatch":
+		actualRoundMoney := min(gm.getRoundMoney(), g.EnemyDuelGamePlayerStatus.Money)
+		if won {
+			g.EnemyDuelGamePlayerStatus.Streak++
+
+			if g.EnemyDuelGamePlayerStatus.AllIn != 0 {
+				g.EnemyDuelGamePlayerStatus.Money += 2 * actualRoundMoney
+			} else {
+				g.EnemyDuelGamePlayerStatus.Money += actualRoundMoney
+			}
+		} else {
+			g.EnemyDuelGamePlayerStatus.Streak = 0
+
+			if !won && !skip {
+				if g.EnemyDuelGamePlayerStatus.AllIn != 0 {
+					g.EnemyDuelGamePlayerStatus.Money = 0
+				} else {
+					g.EnemyDuelGamePlayerStatus.Money -= actualRoundMoney
+				}
+			}
+		}
+
+		leaderBoard.NewMoney = g.EnemyDuelGamePlayerStatus.Money
+		leaderBoard.Streak = g.EnemyDuelGamePlayerStatus.Streak
+		if g.EnemyDuelGamePlayerStatus.Money > 0 {
+			leaderBoard.MaxRound = gm.round + 1
+		}
+
+		return &leaderBoard
+	}
+
+	if gm.round < 5 {
+		if !won && g.EnemyDuelGamePlayerStatus.ShieldState == 2 {
+			won = true
+			g.EnemyDuelGamePlayerStatus.ShieldState = 1
+		}
+	} else {
+		g.EnemyDuelGamePlayerStatus.ShieldState = 0
+	}
+
+	if !won {
+		g.EnemyDuelGamePlayerStatus.Money = 0
+	}
+
+	leaderBoard.NewMoney = g.EnemyDuelGamePlayerStatus.Money
+	leaderBoard.ShieldState = g.EnemyDuelGamePlayerStatus.ShieldState
+	if g.EnemyDuelGamePlayerStatus.Money > 0 {
+		leaderBoard.MaxRound = gm.round + 1
+	}
+
+	return &leaderBoard
+}
+
+func (gm *EnemyDuelGame) getAllPlayerResult() map[string]*contract.EnemyDuelBattleStatusRoundLeaderBoard {
+	sessions := gm.getSessions()
+
+	allPlayerResult := make(map[string]*contract.EnemyDuelBattleStatusRoundLeaderBoard)
+
+	for s, g := range sessions {
+		playerResult := gm.getPlayerResult(s, g)
+		allPlayerResult[playerResult.PlayerID] = playerResult
+	}
+
+	maxNumPlayer := gm.getMaxNumPlayer()
+
+	for i := 0; i < maxNumPlayer; i++ {
+		playerID := getExternalPlayerID(i)
+		if _, ok := allPlayerResult[playerID]; !ok {
+			allPlayerResult[playerID] = newEmptyEnemyDuelBattleStatusRoundLeaderBoard(playerID)
+		}
+	}
+
+	return allPlayerResult
 }
 
 func getModeIDStageID(teamToken string) (string, string, error) {

@@ -82,3 +82,23 @@ func NewS2CEnemyDuelClientStateMessageForBet(state uint8, round uint8, forceEndT
 	msg.BetList = []*EnemyDuelBattleStatusBetItem{{PlayerID: playerID, Side: side, AllIn: allIn, Streak: streak}}
 	return msg
 }
+
+func NewS2CEnemyDuelClientStateMessageForSettle(state uint8, round uint8, forceEndTs time.Time, allPlayerResult map[string]*EnemyDuelBattleStatusRoundLeaderBoard, playerID string, externalPlayerID string) *S2CEnemyDuelClientStateMessage {
+	msg := NewS2CEnemyDuelClientStateMessage(state, round, forceEndTs)
+
+	var leaderBoard []*EnemyDuelBattleStatusRoundLeaderBoard
+
+	for k, v := range allPlayerResult {
+		if k == externalPlayerID {
+			nv := *v
+			nv.PlayerID = playerID
+			leaderBoard = append(leaderBoard, &nv)
+		} else {
+			leaderBoard = append(leaderBoard, v)
+		}
+	}
+
+	msg.LeaderBoard = leaderBoard
+
+	return msg
+}
