@@ -31,15 +31,26 @@ func NewS2CEnemyDuelEndMessage() *S2CEnemyDuelEndMessage {
 	return &S2CEnemyDuelEndMessage{}
 }
 
-func NewS2CEnemyDuelJoinMessage(stageID string, playerID string, otherPlayerIDSlice []string) *S2CEnemyDuelJoinMessage {
+func getNickName(isSelf bool, externalPlayerID string) string {
+	var pureNickName string
+	if isSelf {
+		pureNickName = "Bachelor"
+	} else {
+		pureNickName = "Undergraduate"
+	}
+
+	return fmt.Sprintf("%s#%04s", pureNickName, externalPlayerID)
+}
+
+func NewS2CEnemyDuelJoinMessage(stageID string, playerID string, externalPlayerID string, otherPlayerIDSlice []string) *S2CEnemyDuelJoinMessage {
 	players := []*EnemyDuelServicePlayer{
 		{
-			PlayerID: playerID, AvatarID: "avatar_def_01", NickName: "Bachelor#1234", AvatarType: "ICON",
+			PlayerID: playerID, AvatarID: "avatar_def_01", NickName: getNickName(true, externalPlayerID), AvatarType: "ICON",
 		},
 	}
 
-	for i, otherPlayerID := range otherPlayerIDSlice {
-		players = append(players, &EnemyDuelServicePlayer{PlayerID: otherPlayerID, AvatarID: "avatar_def_01", NickName: fmt.Sprintf("Undergraduate#%04d", i), AvatarType: "ICON"})
+	for _, otherPlayerID := range otherPlayerIDSlice {
+		players = append(players, &EnemyDuelServicePlayer{PlayerID: otherPlayerID, AvatarID: "avatar_def_01", NickName: getNickName(false, otherPlayerID), AvatarType: "ICON"})
 	}
 
 	return &S2CEnemyDuelJoinMessage{

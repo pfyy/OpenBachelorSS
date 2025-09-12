@@ -843,7 +843,7 @@ func HandleSessionMessage(s *session.Session, g *SessionGameStatus, c contract.C
 
 		otherPlayerIDSlice := game.getOtherPlayerIDSlice(g.EnemyDuelGamePlayerStatus.internalPlayerID)
 
-		s.SendMessage(contract.NewS2CEnemyDuelJoinMessage(stageID, msg.PlayerID, otherPlayerIDSlice))
+		s.SendMessage(contract.NewS2CEnemyDuelJoinMessage(stageID, msg.PlayerID, g.EnemyDuelGamePlayerStatus.getExternalPlayerID(), otherPlayerIDSlice))
 
 		return
 	}
