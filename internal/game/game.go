@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/rand"
 	"strconv"
 	"strings"
 	"sync"
@@ -357,6 +358,16 @@ type EnemyDuelGame struct {
 	round                uint8
 	step                 uint32
 	reportSide           uint8
+	seed                 uint32
+}
+
+func getRandNonZeroUint32() uint32 {
+	for {
+		num := rand.Uint32()
+		if num != 0 {
+			return num
+		}
+	}
 }
 
 func NewEnemyDuelGame(gameID string, modeID string, stageID string) *EnemyDuelGame {
@@ -369,6 +380,7 @@ func NewEnemyDuelGame(gameID string, modeID string, stageID string) *EnemyDuelGa
 		ctx:      ctx,
 		cancel:   cancel,
 		sessions: make(map[*session.Session]*SessionGameStatus),
+		seed:     getRandNonZeroUint32(),
 	}
 
 	gm.SetState(&EnemyDuelGameWaitingState{EnemyDuelGameStateBase: EnemyDuelGameStateBase{EnemyDuel: gm}})
@@ -843,7 +855,7 @@ func HandleSessionMessage(s *session.Session, g *SessionGameStatus, c contract.C
 
 		otherPlayerIDSlice := game.getOtherPlayerIDSlice(g.EnemyDuelGamePlayerStatus.internalPlayerID)
 
-		s.SendMessage(contract.NewS2CEnemyDuelJoinMessage(stageID, msg.PlayerID, g.EnemyDuelGamePlayerStatus.getExternalPlayerID(), otherPlayerIDSlice))
+		s.SendMessage(contract.NewS2CEnemyDuelJoinMessage(stageID, msg.PlayerID, g.EnemyDuelGamePlayerStatus.getExternalPlayerID(), otherPlayerIDSlice, game.seed))
 
 		return
 	}

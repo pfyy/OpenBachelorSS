@@ -42,7 +42,7 @@ func getNickName(isSelf bool, externalPlayerID string) string {
 	return fmt.Sprintf("%s#%04s", pureNickName, externalPlayerID)
 }
 
-func NewS2CEnemyDuelJoinMessage(stageID string, playerID string, externalPlayerID string, otherPlayerIDSlice []string) *S2CEnemyDuelJoinMessage {
+func NewS2CEnemyDuelJoinMessage(stageID string, playerID string, externalPlayerID string, otherPlayerIDSlice []string, seed uint32) *S2CEnemyDuelJoinMessage {
 	players := []*EnemyDuelServicePlayer{
 		{
 			PlayerID: playerID, AvatarID: "avatar_def_01", NickName: getNickName(true, externalPlayerID), AvatarType: "ICON",
@@ -56,7 +56,7 @@ func NewS2CEnemyDuelJoinMessage(stageID string, playerID string, externalPlayerI
 	return &S2CEnemyDuelJoinMessage{
 		StageID:   stageID,
 		Players:   players,
-		StageSeed: 123456,
+		StageSeed: seed,
 	}
 }
 
