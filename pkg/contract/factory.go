@@ -54,8 +54,9 @@ func NewS2CEnemyDuelJoinMessage(stageID string, playerID string, externalPlayerI
 	}
 
 	return &S2CEnemyDuelJoinMessage{
-		StageID: stageID,
-		Players: players,
+		StageID:   stageID,
+		Players:   players,
+		StageSeed: 123456,
 	}
 }
 
