@@ -286,9 +286,9 @@ func (s *EnemyDuelGameSettleState) OnEnter() {
 
 	sessions := s.EnemyDuel.getSessions()
 
-	for session, gameStatus := range sessions {
-		allPlayerResult := s.EnemyDuel.getAllPlayerResult()
+	allPlayerResult := s.EnemyDuel.getAllPlayerResult()
 
+	for session, gameStatus := range sessions {
 		session.SendMessage(contract.NewS2CEnemyDuelClientStateMessageForSettle(4, s.EnemyDuel.round, s.ForceExitTime, allPlayerResult, gameStatus.EnemyDuelGamePlayerStatus.PlayerID, gameStatus.EnemyDuelGamePlayerStatus.getExternalPlayerID()))
 	}
 }
