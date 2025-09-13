@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/OpenBachelor/OpenBachelorSS/internal/config"
 	"github.com/OpenBachelor/OpenBachelorSS/internal/session"
 	"github.com/OpenBachelor/OpenBachelorSS/pkg/contract"
 )
@@ -23,6 +24,7 @@ type EnemyDuelGamePlayerStatus struct {
 	Side             uint8
 	AllIn            uint8
 	ReportSide       uint8
+	IsReady          bool
 }
 
 func getExternalPlayerID(internalPlayerID int) string {
@@ -176,7 +178,7 @@ func (s *EnemyDuelGameWaitingState) OnExit() {
 func (s *EnemyDuelGameWaitingState) Update() {
 	currentTime := time.Now()
 
-	if currentTime.After(s.ForceExitTime) {
+	if s.EnemyDuel.isAllPlayerReady() || currentTime.After(s.ForceExitTime) {
 		s.EnemyDuel.setNoNewSession()
 		s.EnemyDuel.SetState(&EnemyDuelGameEntryState{EnemyDuelGameStateBase: EnemyDuelGameStateBase{EnemyDuel: s.EnemyDuel}})
 		return
@@ -753,6 +755,29 @@ func (gm *EnemyDuelGame) getAllPlayerResult() map[string]*contract.EnemyDuelBatt
 	return allPlayerResult
 }
 
+func (gm *EnemyDuelGame) isAllPlayerReady() bool {
+	cfg := config.Get()
+
+	numPlayer := gm.getMaxNumPlayer()
+	if cfg.Server.SinglePlayer {
+		numPlayer = 1
+	}
+
+	sessions := gm.getSessions()
+
+	if len(sessions) < numPlayer {
+		return false
+	}
+
+	for _, g := range sessions {
+		if !g.EnemyDuelGamePlayerStatus.IsReady {
+			return false
+		}
+	}
+
+	return true
+}
+
 func getModeIDStageID(teamToken string) (string, string, error) {
 	parts := strings.Split(teamToken, "|")
 
@@ -877,6 +902,12 @@ func HandleSessionMessage(s *session.Session, g *SessionGameStatus, c contract.C
 
 	if msg, ok := c.(*contract.C2SEnemyDuelBetMessage); ok {
 		g.EnemyDuel.handleBetMessage(s, g, msg)
+
+		return
+	}
+
+	if _, ok := c.(*contract.C2SEnemyDuelReadyMessage); ok {
+		g.EnemyDuelGamePlayerStatus.IsReady = true
 
 		return
 	}
