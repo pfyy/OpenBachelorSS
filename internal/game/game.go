@@ -167,8 +167,10 @@ type EnemyDuelGameWaitingState struct {
 }
 
 func (s *EnemyDuelGameWaitingState) OnEnter() {
+	cfg := config.Get()
+
 	s.SetEnterTime()
-	s.SetForceExitTime(30 * time.Second)
+	s.SetForceExitTime(time.Duration(cfg.Server.MultiPlayerWaitSec) * time.Second)
 }
 
 func (s *EnemyDuelGameWaitingState) OnExit() {

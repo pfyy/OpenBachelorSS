@@ -9,9 +9,10 @@ import (
 
 type Config struct {
 	Server struct {
-		Addr         string `yaml:"addr"`
-		SinglePlayer bool   `yaml:"single_player"`
-		Debug        bool   `yaml:"debug"`
+		Addr               string `yaml:"addr"`
+		SinglePlayer       bool   `yaml:"single_player"`
+		MultiPlayerWaitSec int    `yaml:"multi_player_wait_sec"`
+		Debug              bool   `yaml:"debug"`
 	} `yaml:"server"`
 }
 
