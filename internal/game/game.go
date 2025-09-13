@@ -274,6 +274,10 @@ func (s *EnemyDuelGameBattleState) Update() {
 	currentTime := time.Now()
 
 	if reportSide != 0 || currentTime.After(s.ForceExitTime) {
+		if reportSide == 0 {
+			reportSide = 0b11
+		}
+
 		s.EnemyDuel.reportSide = reportSide
 		s.EnemyDuel.SetState(&EnemyDuelGameSettleState{EnemyDuelGameStateBase: EnemyDuelGameStateBase{EnemyDuel: s.EnemyDuel}})
 		return
