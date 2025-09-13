@@ -185,11 +185,14 @@ func (s *EnemyDuelGameWaitingState) Update() {
 
 type EnemyDuelGameEntryState struct {
 	EnemyDuelGameStateBase
+	Seed uint32
 }
 
 func (s *EnemyDuelGameEntryState) OnEnter() {
 	s.SetEnterTime()
 	s.SetForceExitTime(3 * time.Second)
+
+	s.Seed = rand.Uint32()
 
 	s.EnemyDuel.clearStep()
 	s.EnemyDuel.clearState()
@@ -197,7 +200,7 @@ func (s *EnemyDuelGameEntryState) OnEnter() {
 	sessions := s.EnemyDuel.getSessions()
 
 	for session := range sessions {
-		session.SendMessage(contract.NewS2CEnemyDuelClientStateMessage(1, s.EnemyDuel.round, s.ForceExitTime))
+		session.SendMessage(contract.NewS2CEnemyDuelClientStateMessageForEntry(1, s.EnemyDuel.round, s.ForceExitTime, s.Seed))
 	}
 }
 

@@ -114,3 +114,9 @@ func NewS2CEnemyDuelClientStateMessageForSettle(state uint8, round uint8, forceE
 
 	return msg
 }
+
+func NewS2CEnemyDuelClientStateMessageForEntry(state uint8, round uint8, forceEndTs time.Time, seed uint32) *S2CEnemyDuelClientStateMessage {
+	msg := NewS2CEnemyDuelClientStateMessage(state, round, forceEndTs)
+	msg.SrcEntryData = []*EnemyDuelBattleStatusEntryData{{Seed: seed}}
+	return msg
+}
