@@ -53,8 +53,11 @@ func NewS2CEnemyDuelJoinMessage(stageID string, playerID string, externalPlayerI
 		players = append(players, &EnemyDuelServicePlayer{PlayerID: otherPlayerID, AvatarID: "avatar_def_01", NickName: getNickName(false, otherPlayerID), AvatarType: "ICON"})
 	}
 
+	currentTime := time.Now()
+
 	return &S2CEnemyDuelJoinMessage{
 		StageID:   stageID,
+		NowTs:     uint64(currentTime.Unix()),
 		Players:   players,
 		StageSeed: seed,
 	}
