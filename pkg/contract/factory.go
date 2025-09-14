@@ -74,7 +74,7 @@ func NewC2SEnemyDuelFinalSettleMessage() *C2SEnemyDuelFinalSettleMessage {
 func NewS2CEnemyDuelStepMessage(step uint32, round uint8) *S2CEnemyDuelStepMessage {
 	return &S2CEnemyDuelStepMessage{
 		Index:    step,
-		Duration: 100,
+		Duration: 300,
 		CheckSeq: -1,
 		Round:    round,
 	}
