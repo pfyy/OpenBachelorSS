@@ -1,5 +1,11 @@
 package contract
 
+type MessageDomain int
+
+const (
+	EnemyDuelMessageDomain MessageDomain = iota
+)
+
 const (
 	S2CEnemyDuelEmojiMessageType       = 224
 	S2CEnemyDuelHeartBeatMessageType   = 2

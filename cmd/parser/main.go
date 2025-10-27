@@ -23,7 +23,7 @@ func processEnv(env *protocol.Envelope, verbose bool, parsedMsgCnt *int, parsedA
 		}
 	}()
 
-	content, err := contract.FromEnvelope(env)
+	content, err := contract.FromEnvelope(contract.EnemyDuelMessageDomain, env)
 	if err != nil {
 		if verbose {
 			log.Printf("failed to get content of %+v: %v", env, err)

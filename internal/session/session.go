@@ -19,6 +19,7 @@ type Conn interface {
 }
 
 type Session struct {
+	msgDomain contract.MessageDomain
 	conn      Conn
 	wg        sync.WaitGroup
 	send      chan contract.Content
@@ -34,16 +35,17 @@ type Session struct {
 
 const sessionChanSize = 1024
 
-func NewSession(parentCtx context.Context, conn Conn) *Session {
+func NewSession(msgDomain contract.MessageDomain, parentCtx context.Context, conn Conn) *Session {
 	ctx, cancel := context.WithCancel(parentCtx)
 
 	return &Session{
-		conn:   conn,
-		send:   make(chan contract.Content, sessionChanSize),
-		recv:   make(chan contract.Content, sessionChanSize),
-		ctx:    ctx,
-		cancel: cancel,
-		done:   make(chan struct{}),
+		msgDomain: msgDomain,
+		conn:      conn,
+		send:      make(chan contract.Content, sessionChanSize),
+		recv:      make(chan contract.Content, sessionChanSize),
+		ctx:       ctx,
+		cancel:    cancel,
+		done:      make(chan struct{}),
 	}
 }
 
@@ -72,7 +74,7 @@ func (s *Session) readLoop() {
 	go func() {
 		for {
 			// this line is still blocking on windows even if CloseRead() is called, fuck windows
-			content, err := contract.ReadContent(s.conn)
+			content, err := contract.ReadContent(s.msgDomain, s.conn)
 
 			readResultChan <- ReadResult{content: content, err: err}
 

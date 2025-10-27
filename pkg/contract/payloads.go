@@ -11,31 +11,31 @@ import (
 	"github.com/OpenBachelor/OpenBachelorSS/pkg/protocol"
 )
 
-var messageRegistry = make(map[uint32]func() Content)
+var enemyDuelMessageRegistry = make(map[uint32]func() Content)
 
 func init() {
-	RegisterMessage(S2CEnemyDuelEmojiMessageType, func() Content { return &S2CEnemyDuelEmojiMessage{} })
-	RegisterMessage(S2CEnemyDuelHeartBeatMessageType, func() Content { return &S2CEnemyDuelHeartBeatMessage{} })
-	RegisterMessage(S2CEnemyDuelQuitMessageType, func() Content { return &S2CEnemyDuelQuitMessage{} })
-	RegisterMessage(S2CEnemyDuelStepMessageType, func() Content { return &S2CEnemyDuelStepMessage{} })
-	RegisterMessage(S2CEnemyDuelClientStateMessageType, func() Content { return &S2CEnemyDuelClientStateMessage{} })
-	RegisterMessage(S2CEnemyDuelJoinMessageType, func() Content { return &S2CEnemyDuelJoinMessage{} })
-	RegisterMessage(S2CEnemyDuelEndMessageType, func() Content { return &S2CEnemyDuelEndMessage{} })
-	RegisterMessage(S2CEnemyDuelHistoryMessageType, func() Content { return &S2CEnemyDuelHistoryMessage{} })
-	RegisterMessage(S2CEnemyDuelTeamJoinMessageType, func() Content { return &S2CEnemyDuelTeamJoinMessage{} })
-	RegisterMessage(S2CEnemyDuelKickMessageType, func() Content { return &S2CEnemyDuelKickMessage{} })
-	RegisterMessage(S2CEnemyDuelTeamStatusMessageType, func() Content { return &S2CEnemyDuelTeamStatusMessage{} })
+	RegisterMessage(EnemyDuelMessageDomain, S2CEnemyDuelEmojiMessageType, func() Content { return &S2CEnemyDuelEmojiMessage{} })
+	RegisterMessage(EnemyDuelMessageDomain, S2CEnemyDuelHeartBeatMessageType, func() Content { return &S2CEnemyDuelHeartBeatMessage{} })
+	RegisterMessage(EnemyDuelMessageDomain, S2CEnemyDuelQuitMessageType, func() Content { return &S2CEnemyDuelQuitMessage{} })
+	RegisterMessage(EnemyDuelMessageDomain, S2CEnemyDuelStepMessageType, func() Content { return &S2CEnemyDuelStepMessage{} })
+	RegisterMessage(EnemyDuelMessageDomain, S2CEnemyDuelClientStateMessageType, func() Content { return &S2CEnemyDuelClientStateMessage{} })
+	RegisterMessage(EnemyDuelMessageDomain, S2CEnemyDuelJoinMessageType, func() Content { return &S2CEnemyDuelJoinMessage{} })
+	RegisterMessage(EnemyDuelMessageDomain, S2CEnemyDuelEndMessageType, func() Content { return &S2CEnemyDuelEndMessage{} })
+	RegisterMessage(EnemyDuelMessageDomain, S2CEnemyDuelHistoryMessageType, func() Content { return &S2CEnemyDuelHistoryMessage{} })
+	RegisterMessage(EnemyDuelMessageDomain, S2CEnemyDuelTeamJoinMessageType, func() Content { return &S2CEnemyDuelTeamJoinMessage{} })
+	RegisterMessage(EnemyDuelMessageDomain, S2CEnemyDuelKickMessageType, func() Content { return &S2CEnemyDuelKickMessage{} })
+	RegisterMessage(EnemyDuelMessageDomain, S2CEnemyDuelTeamStatusMessageType, func() Content { return &S2CEnemyDuelTeamStatusMessage{} })
 
-	RegisterMessage(C2SEnemyDuelEmojiMessageType, func() Content { return &C2SEnemyDuelEmojiMessage{} })
-	RegisterMessage(C2SEnemyDuelReadyMessageType, func() Content { return &C2SEnemyDuelReadyMessage{} })
-	RegisterMessage(C2SEnemyDuelJoinMessageType, func() Content { return &C2SEnemyDuelJoinMessage{} })
-	RegisterMessage(C2SEnemyDuelRoundSettleMessageType, func() Content { return &C2SEnemyDuelRoundSettleMessage{} })
-	RegisterMessage(C2SEnemyDuelBetMessageType, func() Content { return &C2SEnemyDuelBetMessage{} })
-	RegisterMessage(C2SEnemyDuelHistoryMessageType, func() Content { return &C2SEnemyDuelHistoryMessage{} })
-	RegisterMessage(C2SEnemyDuelQuitMessageType, func() Content { return &C2SEnemyDuelQuitMessage{} })
-	RegisterMessage(C2SEnemyDuelHeartBeatMessageType, func() Content { return &C2SEnemyDuelHeartBeatMessage{} })
-	RegisterMessage(C2SEnemyDuelFinalSettleMessageType, func() Content { return &C2SEnemyDuelFinalSettleMessage{} })
-	RegisterMessage(C2SEnemyDuelTeamJoinMessageType, func() Content { return &C2SEnemyDuelTeamJoinMessage{} })
+	RegisterMessage(EnemyDuelMessageDomain, C2SEnemyDuelEmojiMessageType, func() Content { return &C2SEnemyDuelEmojiMessage{} })
+	RegisterMessage(EnemyDuelMessageDomain, C2SEnemyDuelReadyMessageType, func() Content { return &C2SEnemyDuelReadyMessage{} })
+	RegisterMessage(EnemyDuelMessageDomain, C2SEnemyDuelJoinMessageType, func() Content { return &C2SEnemyDuelJoinMessage{} })
+	RegisterMessage(EnemyDuelMessageDomain, C2SEnemyDuelRoundSettleMessageType, func() Content { return &C2SEnemyDuelRoundSettleMessage{} })
+	RegisterMessage(EnemyDuelMessageDomain, C2SEnemyDuelBetMessageType, func() Content { return &C2SEnemyDuelBetMessage{} })
+	RegisterMessage(EnemyDuelMessageDomain, C2SEnemyDuelHistoryMessageType, func() Content { return &C2SEnemyDuelHistoryMessage{} })
+	RegisterMessage(EnemyDuelMessageDomain, C2SEnemyDuelQuitMessageType, func() Content { return &C2SEnemyDuelQuitMessage{} })
+	RegisterMessage(EnemyDuelMessageDomain, C2SEnemyDuelHeartBeatMessageType, func() Content { return &C2SEnemyDuelHeartBeatMessage{} })
+	RegisterMessage(EnemyDuelMessageDomain, C2SEnemyDuelFinalSettleMessageType, func() Content { return &C2SEnemyDuelFinalSettleMessage{} })
+	RegisterMessage(EnemyDuelMessageDomain, C2SEnemyDuelTeamJoinMessageType, func() Content { return &C2SEnemyDuelTeamJoinMessage{} })
 }
 
 type UnknownMessage struct {
@@ -64,14 +64,25 @@ func NewUnknownMessage(env *protocol.Envelope) *UnknownMessage {
 	}
 }
 
-func RegisterMessage(msgType uint32, constructor func() Content) {
+func getMessageRegistry(msgDomain MessageDomain) map[uint32]func() Content {
+	switch msgDomain {
+	case EnemyDuelMessageDomain:
+		return enemyDuelMessageRegistry
+	}
+	return nil
+}
+
+func RegisterMessage(msgDomain MessageDomain, msgType uint32, constructor func() Content) {
+	messageRegistry := getMessageRegistry(msgDomain)
 	if _, exists := messageRegistry[msgType]; exists {
 		panic(fmt.Sprintf("message type %d is already registered", msgType))
 	}
 	messageRegistry[msgType] = constructor
 }
 
-func FromEnvelope(env *protocol.Envelope) (Content, error) {
+func FromEnvelope(msgDomain MessageDomain, env *protocol.Envelope) (Content, error) {
+	messageRegistry := getMessageRegistry(msgDomain)
+
 	constructor, ok := messageRegistry[env.Type]
 
 	if !ok {
@@ -111,12 +122,12 @@ func WriteContent(w io.Writer, c Content) error {
 	return nil
 }
 
-func ReadContent(r io.Reader) (Content, error) {
+func ReadContent(msgDomain MessageDomain, r io.Reader) (Content, error) {
 	env, err := protocol.ReadEnvelope(r)
 	if err != nil {
 		return nil, err
 	}
-	c, err := FromEnvelope(env)
+	c, err := FromEnvelope(msgDomain, env)
 	if err != nil {
 		return nil, err
 	}

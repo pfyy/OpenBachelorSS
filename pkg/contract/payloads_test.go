@@ -30,7 +30,7 @@ func TestReadContent(t *testing.T) {
 
 	reader := bytes.NewReader(packet)
 
-	content, err := ReadContent(reader)
+	content, err := ReadContent(EnemyDuelMessageDomain, reader)
 
 	if err != nil {
 		t.Fatalf("ReadContent failed: %v", err)

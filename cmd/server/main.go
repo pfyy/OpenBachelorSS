@@ -14,6 +14,7 @@ import (
 	"github.com/OpenBachelor/OpenBachelorSS/internal/game"
 	"github.com/OpenBachelor/OpenBachelorSS/internal/hub"
 	"github.com/OpenBachelor/OpenBachelorSS/internal/session"
+	"github.com/OpenBachelor/OpenBachelorSS/pkg/contract"
 )
 
 func handleConnection(ctx context.Context, conn net.Conn, h *hub.Hub, wg *sync.WaitGroup) {
@@ -31,7 +32,7 @@ func handleConnection(ctx context.Context, conn net.Conn, h *hub.Hub, wg *sync.W
 		log.Printf("conn: %+v", tcpConn.RemoteAddr())
 	}
 
-	s := session.NewSession(ctx, tcpConn)
+	s := session.NewSession(contract.EnemyDuelMessageDomain, ctx, tcpConn)
 	s.Start()
 
 	err := h.AddSession(s)
