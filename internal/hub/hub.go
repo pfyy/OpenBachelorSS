@@ -13,7 +13,7 @@ import (
 
 type Hub struct {
 	sessionsMu   sync.Mutex
-	sessions     map[*session.Session]*game.SessionGameStatus
+	sessions     map[*session.Session]game.SessionGameStatus
 	noNewSession bool
 	ctx          context.Context
 	cancel       context.CancelFunc
@@ -26,18 +26,18 @@ func NewHub(parentCtx context.Context) *Hub {
 	ctx, cancel := context.WithCancel(parentCtx)
 
 	return &Hub{
-		sessions: make(map[*session.Session]*game.SessionGameStatus),
+		sessions: make(map[*session.Session]game.SessionGameStatus),
 		ctx:      ctx,
 		cancel:   cancel,
 		done:     make(chan struct{}),
 	}
 }
 
-func (h *Hub) copySessions() map[*session.Session]*game.SessionGameStatus {
+func (h *Hub) copySessions() map[*session.Session]game.SessionGameStatus {
 	h.sessionsMu.Lock()
 	defer h.sessionsMu.Unlock()
 
-	sessions := make(map[*session.Session]*game.SessionGameStatus)
+	sessions := make(map[*session.Session]game.SessionGameStatus)
 
 	for s, g := range h.sessions {
 		sessions[s] = g
@@ -117,8 +117,8 @@ func (h *Hub) closeSessions() {
 	}
 }
 
-func (h *Hub) addSession(s *session.Session) (*game.SessionGameStatus, error) {
-	g := &game.SessionGameStatus{}
+func (h *Hub) addSession(s *session.Session) (game.SessionGameStatus, error) {
+	g := game.NewSessionGameStatus(s.MsgDomain)
 
 	h.sessionsMu.Lock()
 	defer h.sessionsMu.Unlock()
@@ -142,7 +142,7 @@ func (h *Hub) removeSession(s *session.Session) {
 	log.Printf("num of active session: %d", len(h.sessions))
 }
 
-func (h *Hub) readSession(s *session.Session, g *game.SessionGameStatus) {
+func (h *Hub) readSession(s *session.Session, g game.SessionGameStatus) {
 	defer h.wg.Done()
 
 	for c := range s.Recv() {

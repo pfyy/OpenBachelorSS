@@ -35,10 +35,25 @@ func (s *EnemyDuelGamePlayerStatus) getExternalPlayerID() string {
 	return getExternalPlayerID(s.internalPlayerID)
 }
 
-type SessionGameStatus struct {
-	LastActiveTime            time.Time
+type SessionGameStatus interface {
+}
+
+type BaseSessionGameStatus struct {
+	LastActiveTime time.Time
+}
+
+type EnemyDuelSessionGameStatus struct {
+	BaseSessionGameStatus
 	EnemyDuel                 *EnemyDuelGame
 	EnemyDuelGamePlayerStatus EnemyDuelGamePlayerStatus
+}
+
+func NewSessionGameStatus(msgDomain contract.MessageDomain) SessionGameStatus {
+	switch msgDomain {
+	case contract.EnemyDuelMessageDomain:
+		return &EnemyDuelSessionGameStatus{}
+	}
+	return nil
 }
 
 var (
@@ -363,7 +378,7 @@ type EnemyDuelGame struct {
 	cancel               context.CancelFunc
 	stopOnce             sync.Once
 	sessionsMu           sync.Mutex
-	sessions             map[*session.Session]*SessionGameStatus
+	sessions             map[*session.Session]*EnemyDuelSessionGameStatus
 	nextInternalPlayerID int
 	noNewSession         bool
 	round                uint8
@@ -390,7 +405,7 @@ func NewEnemyDuelGame(gameID string, modeID string, stageID string) *EnemyDuelGa
 		StageID:  stageID,
 		ctx:      ctx,
 		cancel:   cancel,
-		sessions: make(map[*session.Session]*SessionGameStatus),
+		sessions: make(map[*session.Session]*EnemyDuelSessionGameStatus),
 		seed:     getRandNonZeroUint32(),
 	}
 
@@ -445,7 +460,7 @@ func (gm *EnemyDuelGame) Stop() {
 	})
 }
 
-func (gm *EnemyDuelGame) AddSession(s *session.Session, g *SessionGameStatus) error {
+func (gm *EnemyDuelGame) AddSession(s *session.Session, g *EnemyDuelSessionGameStatus) error {
 	gm.sessionsMu.Lock()
 	defer gm.sessionsMu.Unlock()
 
@@ -473,11 +488,11 @@ func (gm *EnemyDuelGame) setNoNewSession() {
 	gm.noNewSession = true
 }
 
-func (gm *EnemyDuelGame) getSessions() map[*session.Session]*SessionGameStatus {
+func (gm *EnemyDuelGame) getSessions() map[*session.Session]*EnemyDuelSessionGameStatus {
 	gm.sessionsMu.Lock()
 	defer gm.sessionsMu.Unlock()
 
-	sessions := make(map[*session.Session]*SessionGameStatus)
+	sessions := make(map[*session.Session]*EnemyDuelSessionGameStatus)
 	for s, g := range gm.sessions {
 		sessions[s] = g
 	}
@@ -566,7 +581,7 @@ func (gm *EnemyDuelGame) hasAliveSession() bool {
 	return false
 }
 
-func (gm *EnemyDuelGame) handleEmojiMessage(s *session.Session, g *SessionGameStatus, msg *contract.C2SEnemyDuelEmojiMessage) {
+func (gm *EnemyDuelGame) handleEmojiMessage(s *session.Session, g *EnemyDuelSessionGameStatus, msg *contract.C2SEnemyDuelEmojiMessage) {
 	sessions := gm.getSessions()
 
 	for session := range sessions {
@@ -580,7 +595,7 @@ func (gm *EnemyDuelGame) handleEmojiMessage(s *session.Session, g *SessionGameSt
 	}
 }
 
-func (gm *EnemyDuelGame) handleBetMessage(s *session.Session, g *SessionGameStatus, msg *contract.C2SEnemyDuelBetMessage) {
+func (gm *EnemyDuelGame) handleBetMessage(s *session.Session, g *EnemyDuelSessionGameStatus, msg *contract.C2SEnemyDuelBetMessage) {
 	state := gm.state
 
 	if _, ok := state.(*EnemyDuelGameBetState); !ok {
@@ -627,7 +642,7 @@ func (gm *EnemyDuelGame) getOtherPlayerIDSlice(internalPlayerID int) []string {
 	return otherPlayerIDSlice
 }
 
-func (gm *EnemyDuelGame) initPlayerStatus(g *SessionGameStatus, playerID string) {
+func (gm *EnemyDuelGame) initPlayerStatus(g *EnemyDuelSessionGameStatus, playerID string) {
 	g.EnemyDuelGamePlayerStatus.PlayerID = playerID
 
 	switch gm.ModeID {
@@ -666,7 +681,7 @@ func (gm *EnemyDuelGame) getRoundMoney() uint32 {
 	return 50000
 }
 
-func (gm *EnemyDuelGame) getPlayerResult(s *session.Session, g *SessionGameStatus) *contract.EnemyDuelBattleStatusRoundLeaderBoard {
+func (gm *EnemyDuelGame) getPlayerResult(s *session.Session, g *EnemyDuelSessionGameStatus) *contract.EnemyDuelBattleStatusRoundLeaderBoard {
 	if g.EnemyDuelGamePlayerStatus.ShieldState == 1 {
 		g.EnemyDuelGamePlayerStatus.ShieldState = 0
 	}
@@ -812,18 +827,21 @@ func getOrCreateGame(gameID string, modeID string, stageID string) *EnemyDuelGam
 	return game
 }
 
-func CloseInactiveSession(sessions map[*session.Session]*SessionGameStatus) {
+func CloseInactiveSession(sessions map[*session.Session]SessionGameStatus) {
 	currentTime := time.Now()
 	tenSecAgo := currentTime.Add(-10 * time.Second)
 
-	for s, g := range sessions {
+	for s, gs := range sessions {
+		g := gs.(*EnemyDuelSessionGameStatus)
 		if g.LastActiveTime.Before(tenSecAgo) {
 			s.Close()
 		}
 	}
 }
 
-func HandleSessionMessage(s *session.Session, g *SessionGameStatus, c contract.Content) {
+func HandleSessionMessage(s *session.Session, gs SessionGameStatus, c contract.Content) {
+	g := gs.(*EnemyDuelSessionGameStatus)
+
 	g.LastActiveTime = time.Now()
 
 	if msg, ok := c.(*contract.C2SEnemyDuelHeartBeatMessage); ok {
