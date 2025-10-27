@@ -843,8 +843,7 @@ func CloseInactiveSession(sessions map[*session.Session]SessionGameStatus) {
 	}
 }
 
-func HandleSessionMessage(s *session.Session, gs SessionGameStatus, c contract.Content) {
-	g := gs.(*EnemyDuelSessionGameStatus)
+func handleSessionMessageEnemyDuel(s *session.Session, g *EnemyDuelSessionGameStatus, c contract.Content) {
 
 	g.LastActiveTime = time.Now()
 
@@ -938,5 +937,13 @@ func HandleSessionMessage(s *session.Session, gs SessionGameStatus, c contract.C
 		g.EnemyDuelGamePlayerStatus.IsReady = true
 
 		return
+	}
+}
+
+func HandleSessionMessage(s *session.Session, gs SessionGameStatus, c contract.Content) {
+	switch s.MsgDomain {
+	case contract.EnemyDuelMessageDomain:
+		g := gs.(*EnemyDuelSessionGameStatus)
+		handleSessionMessageEnemyDuel(s, g, c)
 	}
 }
