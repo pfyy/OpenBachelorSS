@@ -36,6 +36,7 @@ func (s *EnemyDuelGamePlayerStatus) getExternalPlayerID() string {
 }
 
 type SessionGameStatus interface {
+	GetBaseSessionGameStatus() *BaseSessionGameStatus
 }
 
 type BaseSessionGameStatus struct {
@@ -46,6 +47,10 @@ type EnemyDuelSessionGameStatus struct {
 	BaseSessionGameStatus
 	EnemyDuel                 *EnemyDuelGame
 	EnemyDuelGamePlayerStatus EnemyDuelGamePlayerStatus
+}
+
+func (g *EnemyDuelSessionGameStatus) GetBaseSessionGameStatus() *BaseSessionGameStatus {
+	return &g.BaseSessionGameStatus
 }
 
 func NewSessionGameStatus(msgDomain contract.MessageDomain) SessionGameStatus {
@@ -832,8 +837,7 @@ func CloseInactiveSession(sessions map[*session.Session]SessionGameStatus) {
 	tenSecAgo := currentTime.Add(-10 * time.Second)
 
 	for s, gs := range sessions {
-		g := gs.(*EnemyDuelSessionGameStatus)
-		if g.LastActiveTime.Before(tenSecAgo) {
+		if gs.GetBaseSessionGameStatus().LastActiveTime.Before(tenSecAgo) {
 			s.Close()
 		}
 	}
