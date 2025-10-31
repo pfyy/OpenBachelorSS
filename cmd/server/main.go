@@ -17,7 +17,7 @@ import (
 	"github.com/OpenBachelor/OpenBachelorSS/pkg/contract"
 )
 
-func handleConnection(ctx context.Context, conn net.Conn, h *hub.Hub, wg *sync.WaitGroup) {
+func handleConnection(ctx context.Context, conn net.Conn, h *hub.Hub, wg *sync.WaitGroup, msgDomain contract.MessageDomain) {
 	defer wg.Done()
 
 	cfg := config.Get()
@@ -32,7 +32,7 @@ func handleConnection(ctx context.Context, conn net.Conn, h *hub.Hub, wg *sync.W
 		log.Printf("conn: %+v", tcpConn.RemoteAddr())
 	}
 
-	s := session.NewSession(contract.EnemyDuelMessageDomain, ctx, tcpConn)
+	s := session.NewSession(msgDomain, ctx, tcpConn)
 	s.Start()
 
 	err := h.AddSession(s)
@@ -41,10 +41,8 @@ func handleConnection(ctx context.Context, conn net.Conn, h *hub.Hub, wg *sync.W
 	}
 }
 
-func mainLoop(ctx context.Context, h *hub.Hub) error {
-	cfg := config.Get()
-
-	listener, err := net.Listen("tcp", cfg.Server.Addr)
+func mainLoop(ctx context.Context, h *hub.Hub, addr string, msgDomain contract.MessageDomain) error {
+	listener, err := net.Listen("tcp", addr)
 	if err != nil {
 		return fmt.Errorf("failed to listen: %w", err)
 	}
@@ -73,7 +71,7 @@ func mainLoop(ctx context.Context, h *hub.Hub) error {
 		}
 
 		wg.Add(1)
-		go handleConnection(ctx, conn, h, &wg)
+		go handleConnection(ctx, conn, h, &wg, msgDomain)
 	}
 
 	wg.Wait()
@@ -92,7 +90,8 @@ func main() {
 	h.Start()
 	defer h.Close()
 
-	err := mainLoop(ctx, h)
+	cfg := config.Get()
+	err := mainLoop(ctx, h, cfg.Server.Addr, contract.EnemyDuelMessageDomain)
 
 	if err != nil {
 		log.Fatalf("failed to start main loop: %v", err)
