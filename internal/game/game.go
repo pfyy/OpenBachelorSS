@@ -945,5 +945,8 @@ func HandleSessionMessage(s *session.Session, gs SessionGameStatus, c contract.C
 	case contract.EnemyDuelMessageDomain:
 		g := gs.(*EnemyDuelSessionGameStatus)
 		handleSessionMessageEnemyDuel(s, g, c)
+	case contract.IceBreakerDomain:
+		g := gs.(*IceBreakerSessionGameStatus)
+		handleSessionMessageIceBreaker(s, g, c)
 	}
 }
