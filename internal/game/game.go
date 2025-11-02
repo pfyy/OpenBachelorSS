@@ -57,6 +57,8 @@ func NewSessionGameStatus(msgDomain contract.MessageDomain) SessionGameStatus {
 	switch msgDomain {
 	case contract.EnemyDuelMessageDomain:
 		return &EnemyDuelSessionGameStatus{}
+	case contract.IceBreakerDomain:
+		return &IceBreakerSessionGameStatus{}
 	}
 	return nil
 }
