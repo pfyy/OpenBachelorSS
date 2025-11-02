@@ -68,6 +68,8 @@ func getMessageRegistry(msgDomain MessageDomain) map[uint32]func() Content {
 	switch msgDomain {
 	case EnemyDuelMessageDomain:
 		return enemyDuelMessageRegistry
+	case IceBreakerDomain:
+		return iceBreakerMessageRegistry
 	}
 	return nil
 }

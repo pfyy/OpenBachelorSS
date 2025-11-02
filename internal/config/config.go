@@ -14,6 +14,9 @@ type Config struct {
 		MultiPlayerWaitSec int    `yaml:"multi_player_wait_sec"`
 		Debug              bool   `yaml:"debug"`
 	} `yaml:"server"`
+	IceBreakerServer struct {
+		Addr string `yaml:"addr"`
+	} `yaml:"icebreaker_server"`
 }
 
 const configFilePath = "configs/config.yaml"

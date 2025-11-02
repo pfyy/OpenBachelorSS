@@ -3,3 +3,5 @@ server:
   single_player: true
   multi_player_wait_sec: 30
   debug: true
+icebreaker_server:
+  addr: 127.0.0.1:8544

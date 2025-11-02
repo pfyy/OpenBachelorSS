@@ -106,6 +106,18 @@ func main() {
 
 	}()
 
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		err := mainLoop(ctx, h, cfg.IceBreakerServer.Addr, contract.IceBreakerDomain)
+
+		if err != nil {
+			log.Fatalf("failed to start icebreaker main loop: %v", err)
+		}
+
+	}()
+
 	wg.Wait()
 
 	log.Printf("closing server")

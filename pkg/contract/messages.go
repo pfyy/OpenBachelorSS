@@ -4,6 +4,7 @@ type MessageDomain int
 
 const (
 	EnemyDuelMessageDomain MessageDomain = iota
+	IceBreakerDomain
 )
 
 const (
