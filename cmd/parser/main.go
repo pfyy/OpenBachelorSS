@@ -14,7 +14,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 )
 
-func processEnv(env *protocol.Envelope, verbose bool, parsedMsgCnt *int, parsedAndVerifiedMsgCnt *int) {
+func processEnv(msgDomain contract.MessageDomain, env *protocol.Envelope, verbose bool, parsedMsgCnt *int, parsedAndVerifiedMsgCnt *int) {
 	defer func() {
 		if r := recover(); r != nil {
 			if verbose {
@@ -23,7 +23,7 @@ func processEnv(env *protocol.Envelope, verbose bool, parsedMsgCnt *int, parsedA
 		}
 	}()
 
-	content, err := contract.FromEnvelope(contract.EnemyDuelMessageDomain, env)
+	content, err := contract.FromEnvelope(msgDomain, env)
 	if err != nil {
 		if verbose {
 			log.Printf("failed to get content of %+v: %v", env, err)
@@ -63,8 +63,13 @@ func processEnv(env *protocol.Envelope, verbose bool, parsedMsgCnt *int, parsedA
 }
 
 func main() {
+
+	msgDomainInt := flag.Int("domain", int(contract.EnemyDuelMessageDomain), "message domain")
+
 	verbose := flag.Bool("verbose", false, "print err")
 	flag.Parse()
+
+	msgDomain := contract.MessageDomain(*msgDomainInt)
 
 	if len(flag.Args()) < 1 {
 		log.Fatalf("raw stream file not provided")
@@ -110,7 +115,7 @@ func main() {
 		msgCnt++
 		msgTypeMap[receivedEnv.Type]++
 
-		processEnv(receivedEnv, *verbose, &parsedMsgCnt, &parsedAndVerifiedMsgCnt)
+		processEnv(msgDomain, receivedEnv, *verbose, &parsedMsgCnt, &parsedAndVerifiedMsgCnt)
 	}
 
 	wg.Wait()
