@@ -1,10 +1,13 @@
 package game
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
+	"net/http"
 	"strconv"
 	"strings"
 	"sync"
@@ -219,6 +222,19 @@ func (s *EnemyDuelGameEntryState) OnEnter() {
 	s.SetForceExitTime(0)
 
 	s.Seed = rand.Uint32()
+
+	data := map[string]any{
+		"stage_seed": s.Seed,
+	}
+	jsonData, _ := json.Marshal(data)
+	resp, err := http.Post("http://127.0.0.1:7443/obi/update", "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		panic("obi failure")
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		panic("obi failure")
+	}
 
 	s.EnemyDuel.clearStep()
 	s.EnemyDuel.clearState()
