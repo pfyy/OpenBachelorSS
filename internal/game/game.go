@@ -224,7 +224,7 @@ func (s *EnemyDuelGameEntryState) OnEnter() {
 	s.Seed = rand.Uint32()
 
 	data := map[string]any{
-		"stage_seed": s.Seed,
+		fmt.Sprintf("round_%d_seed", s.EnemyDuel.round): s.Seed,
 	}
 	jsonData, _ := json.Marshal(data)
 	resp, err := http.Post("http://127.0.0.1:7443/obi/update", "application/json", bytes.NewBuffer(jsonData))
@@ -430,6 +430,19 @@ func NewEnemyDuelGame(gameID string, modeID string, stageID string) *EnemyDuelGa
 		cancel:   cancel,
 		sessions: make(map[*session.Session]*EnemyDuelSessionGameStatus),
 		seed:     getRandNonZeroUint32(),
+	}
+
+	data := map[string]any{
+		"stage_seed": gm.seed,
+	}
+	jsonData, _ := json.Marshal(data)
+	resp, err := http.Post("http://127.0.0.1:7443/obi/update", "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		panic("obi failure")
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		panic("obi failure")
 	}
 
 	gm.SetState(&EnemyDuelGameWaitingState{EnemyDuelGameStateBase: EnemyDuelGameStateBase{EnemyDuel: gm}})
