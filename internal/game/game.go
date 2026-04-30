@@ -219,7 +219,7 @@ type EnemyDuelGameEntryState struct {
 
 func (s *EnemyDuelGameEntryState) OnEnter() {
 	s.SetEnterTime()
-	s.SetForceExitTime(0)
+	s.SetForceExitTime(500 * time.Millisecond)
 
 	s.Seed = rand.Uint32()
 
@@ -267,7 +267,7 @@ type EnemyDuelGameBetState struct {
 
 func (s *EnemyDuelGameBetState) OnEnter() {
 	s.SetEnterTime()
-	s.SetForceExitTime(0)
+	s.SetForceExitTime(500 * time.Millisecond)
 
 	sessions := s.EnemyDuel.getSessions()
 
@@ -332,7 +332,7 @@ type EnemyDuelGameSettleState struct {
 
 func (s *EnemyDuelGameSettleState) OnEnter() {
 	s.SetEnterTime()
-	s.SetForceExitTime(0)
+	s.SetForceExitTime(500 * time.Millisecond)
 
 	sessions := s.EnemyDuel.getSessions()
 
@@ -369,7 +369,7 @@ type EnemyDuelGameFinishState struct {
 
 func (s *EnemyDuelGameFinishState) OnEnter() {
 	s.SetEnterTime()
-	s.SetForceExitTime(0)
+	s.SetForceExitTime(500 * time.Millisecond)
 
 	sessions := s.EnemyDuel.getSessions()
 
