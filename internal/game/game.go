@@ -318,6 +318,19 @@ func (s *EnemyDuelGameBattleState) Update() {
 			reportSide = 0b11
 		}
 
+		data := map[string]any{
+			fmt.Sprintf("round_%d_victor", s.EnemyDuel.round): reportSide,
+		}
+		jsonData, _ := json.Marshal(data)
+		resp, err := http.Post("http://127.0.0.1:7443/obi/update", "application/json", bytes.NewBuffer(jsonData))
+		if err != nil {
+			panic("obi failure")
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			panic("obi failure")
+		}
+
 		s.EnemyDuel.reportSide = reportSide
 		s.EnemyDuel.SetState(&EnemyDuelGameSettleState{EnemyDuelGameStateBase: EnemyDuelGameStateBase{EnemyDuel: s.EnemyDuel}})
 		return
