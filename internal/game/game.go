@@ -482,11 +482,21 @@ func (gm *EnemyDuelGame) Run() {
 
 		ticker := time.NewTicker(100 * time.Millisecond)
 
+		var noAliveSessionTime time.Time
+
 		for {
 			select {
 			case <-ticker.C:
 				if !gm.hasAliveSession() {
-					return
+					if noAliveSessionTime.IsZero() {
+						noAliveSessionTime = time.Now()
+					}
+
+					if time.Since(noAliveSessionTime) >= 1*time.Second {
+						return
+					}
+				} else {
+					noAliveSessionTime = time.Time{}
 				}
 
 				if gm.state != nil {
