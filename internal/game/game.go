@@ -492,7 +492,7 @@ func (gm *EnemyDuelGame) Run() {
 						noAliveSessionTime = time.Now()
 					}
 
-					if time.Since(noAliveSessionTime) >= 1*time.Second {
+					if time.Since(noAliveSessionTime) >= 3*time.Second {
 						return
 					}
 				} else {
