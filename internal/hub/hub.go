@@ -53,6 +53,7 @@ func (h *Hub) Start() {
 		defer h.wg.Done()
 
 		ticker := time.NewTicker(3 * time.Second)
+		defer ticker.Stop()
 
 		for {
 			select {

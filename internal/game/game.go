@@ -439,6 +439,7 @@ func (gm *EnemyDuelGame) Run() {
 		defer gm.cancel()
 
 		ticker := time.NewTicker(100 * time.Millisecond)
+		defer ticker.Stop()
 
 		var noAliveSessionTime time.Time
 
