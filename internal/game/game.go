@@ -1,10 +1,13 @@
 package game
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
+	"net/http"
 	"strconv"
 	"strings"
 	"sync"
@@ -216,9 +219,22 @@ type EnemyDuelGameEntryState struct {
 
 func (s *EnemyDuelGameEntryState) OnEnter() {
 	s.SetEnterTime()
-	s.SetForceExitTime(3 * time.Second)
+	s.SetForceExitTime(500 * time.Millisecond)
 
 	s.Seed = rand.Uint32()
+
+	data := map[string]any{
+		fmt.Sprintf("round_%d_seed", s.EnemyDuel.round): s.Seed,
+	}
+	jsonData, _ := json.Marshal(data)
+	resp, err := http.Post("http://127.0.0.1:7443/obi/update", "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		panic("obi failure")
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		panic("obi failure")
+	}
 
 	s.EnemyDuel.clearStep()
 	s.EnemyDuel.clearState()
@@ -251,7 +267,7 @@ type EnemyDuelGameBetState struct {
 
 func (s *EnemyDuelGameBetState) OnEnter() {
 	s.SetEnterTime()
-	s.SetForceExitTime(20 * time.Second)
+	s.SetForceExitTime(500 * time.Millisecond)
 
 	sessions := s.EnemyDuel.getSessions()
 
@@ -302,6 +318,19 @@ func (s *EnemyDuelGameBattleState) Update() {
 			reportSide = 0b11
 		}
 
+		data := map[string]any{
+			fmt.Sprintf("round_%d_victor", s.EnemyDuel.round): reportSide,
+		}
+		jsonData, _ := json.Marshal(data)
+		resp, err := http.Post("http://127.0.0.1:7443/obi/update", "application/json", bytes.NewBuffer(jsonData))
+		if err != nil {
+			panic("obi failure")
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			panic("obi failure")
+		}
+
 		s.EnemyDuel.reportSide = reportSide
 		s.EnemyDuel.SetState(&EnemyDuelGameSettleState{EnemyDuelGameStateBase: EnemyDuelGameStateBase{EnemyDuel: s.EnemyDuel}})
 		return
@@ -316,7 +345,7 @@ type EnemyDuelGameSettleState struct {
 
 func (s *EnemyDuelGameSettleState) OnEnter() {
 	s.SetEnterTime()
-	s.SetForceExitTime(10 * time.Second)
+	s.SetForceExitTime(500 * time.Millisecond)
 
 	sessions := s.EnemyDuel.getSessions()
 
@@ -353,7 +382,7 @@ type EnemyDuelGameFinishState struct {
 
 func (s *EnemyDuelGameFinishState) OnEnter() {
 	s.SetEnterTime()
-	s.SetForceExitTime(10 * time.Second)
+	s.SetForceExitTime(500 * time.Millisecond)
 
 	sessions := s.EnemyDuel.getSessions()
 
@@ -416,6 +445,19 @@ func NewEnemyDuelGame(gameID string, modeID string, stageID string) *EnemyDuelGa
 		seed:     getRandNonZeroUint32(),
 	}
 
+	data := map[string]any{
+		"stage_seed": gm.seed,
+	}
+	jsonData, _ := json.Marshal(data)
+	resp, err := http.Post("http://127.0.0.1:7443/obi/update", "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		panic("obi failure")
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		panic("obi failure")
+	}
+
 	gm.SetState(&EnemyDuelGameWaitingState{EnemyDuelGameStateBase: EnemyDuelGameStateBase{EnemyDuel: gm}})
 
 	return gm
@@ -451,7 +493,7 @@ func (gm *EnemyDuelGame) Run() {
 						noAliveSessionTime = time.Now()
 					}
 
-					if time.Since(noAliveSessionTime) >= 1*time.Second {
+					if time.Since(noAliveSessionTime) >= 3*time.Second {
 						return
 					}
 				} else {
